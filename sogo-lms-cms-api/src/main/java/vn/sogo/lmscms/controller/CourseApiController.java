@@ -23,7 +23,8 @@ import vn.sogo.lmscms.model.TrainerCourseInfo;
 import vn.sogo.lmscms.model.UnitInCourse;
 import vn.sogo.lmscms.model.UnitInfo;
 import vn.sogo.lmscms.model.request.ExcuteTrainerCourse;
-import vn.sogo.lmscms.model.request.ExcuteUnitCourse;
+import vn.sogo.lmscms.model.request.ExecuteCourse;
+import vn.sogo.lmscms.model.request.ExecuteUnitCourse;
 import vn.sogo.lmscms.model.request.GetItemInCourse;
 import vn.sogo.lmscms.model.request.GetItemInLesson;
 import vn.sogo.lmscms.model.request.GetItemInUnit;
@@ -130,15 +131,19 @@ public class CourseApiController extends BaseController {
     
     @RequestMapping(value = UrlEntity.A_EXECUTE_TRAINER_COURSE, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @CrossOrigin
-    public @ResponseBody ApiResponse<CUDReturnMessage> ExcuteTrainerCourse(@RequestBody ExcuteTrainerCourse model) throws Exception {
-        return responseResult(courseService.ExcuteTrainerCourse(model));
+    public @ResponseBody ApiResponse<CUDReturnMessage> ExecuteTrainerCourse(@RequestBody ExcuteTrainerCourse model) throws Exception {
+        return responseResult(courseService.ExecuteTrainerCourse(model));
     }
     
     @RequestMapping(value = UrlEntity.A_EXECUTE_UNIT_COURSE, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @CrossOrigin
-    public @ResponseBody ApiResponse<CUDReturnMessage> AddNewUnitCourse(@RequestBody ExcuteUnitCourse model) throws Exception {
-        return responseResult(courseService.ExcuteUnitCourse(model));
+    public @ResponseBody ApiResponse<CUDReturnMessage> ExecuteUnitCourse(@RequestBody ExecuteUnitCourse model) throws Exception {
+        return responseResult(courseService.ExecuteUnitCourse(model));
     }
-    
+    @RequestMapping(value = UrlEntity.A_EXECUTE_COURSE, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin
+    public @ResponseBody ApiResponse<CUDReturnMessage> ExecuteCourse(@RequestBody ExecuteCourse model) throws Exception {
+        return responseResult(courseService.ExecuteCourse(model));
+    }
     
 }

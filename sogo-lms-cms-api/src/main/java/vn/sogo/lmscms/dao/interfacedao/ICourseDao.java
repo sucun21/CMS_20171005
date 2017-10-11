@@ -15,7 +15,8 @@ import vn.sogo.lmscms.model.TrainerCourseInfo;
 import vn.sogo.lmscms.model.UnitInCourse;
 import vn.sogo.lmscms.model.UnitInfo;
 import vn.sogo.lmscms.model.request.ExcuteTrainerCourse;
-import vn.sogo.lmscms.model.request.ExcuteUnitCourse;
+import vn.sogo.lmscms.model.request.ExecuteCourse;
+import vn.sogo.lmscms.model.request.ExecuteUnitCourse;
 import vn.sogo.lmscms.model.request.UserInfo;
 
 public interface ICourseDao {
@@ -33,6 +34,7 @@ public interface ICourseDao {
 	LessonInfo GetLessonInfoByLessonId(Integer lessonId)  throws Exception;
 	List<ActivityDetails> GetActivityInLesson(Integer lessonId) throws Exception;
 	List<UnitInfo> GetAllUnit(Integer CourseId) throws Exception;
-	CUDReturnMessage ExcuteTrainerCourse(ExcuteTrainerCourse model)throws Exception;
-	CUDReturnMessage ExcuteUnitCourse(ExcuteUnitCourse model)throws Exception;
+	CUDReturnMessage ExecuteTrainerCourse(ExcuteTrainerCourse model)throws Exception;
+	CUDReturnMessage ExecuteUnitCourse(ExecuteUnitCourse model)throws Exception;
+	CUDReturnMessage ExecuteCourse(ExecuteCourse model)throws Exception;
 }

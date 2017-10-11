@@ -54,6 +54,7 @@ public class UrlEntity {
     public static final String A_GET_QUIZ_QUESTION = "/get-quiz-question";
     public static final String A_EXECUTE_TRAINER_COURSE = "/execute-trainer-course";
     public static final String A_EXECUTE_UNIT_COURSE = "/execute-unit-course";
+    public static final String A_EXECUTE_COURSE = "/execute-course";
     /*----------------------------------- URL $OfflineClass ---------------------------------------------*/
     public static final String E_OFFLINE_CLASS = "api/offline-class";
     public static final String A_GET_PENDING_CHECK_ATTENDANCE_CLASS = "/get-pending-check-attendance-class";

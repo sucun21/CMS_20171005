@@ -18,7 +18,8 @@ import vn.sogo.lmscms.model.TrainerCourseInfo;
 import vn.sogo.lmscms.model.UnitInCourse;
 import vn.sogo.lmscms.model.UnitInfo;
 import vn.sogo.lmscms.model.request.ExcuteTrainerCourse;
-import vn.sogo.lmscms.model.request.ExcuteUnitCourse;
+import vn.sogo.lmscms.model.request.ExecuteCourse;
+import vn.sogo.lmscms.model.request.ExecuteUnitCourse;
 import vn.sogo.lmscms.model.request.UserInfo;
 import vn.sogo.lmscms.services.interfaceservice.ICourseService;
 /**
@@ -115,15 +116,21 @@ public class CourseServiceImpl extends BaseService implements ICourseService {
 	}
 
 	@Override
-	public CUDReturnMessage ExcuteTrainerCourse(ExcuteTrainerCourse model)
+	public CUDReturnMessage ExecuteTrainerCourse(ExcuteTrainerCourse model)
 			throws Exception {
-		return courseDao.ExcuteTrainerCourse(model);
+		return courseDao.ExecuteTrainerCourse(model);
 	}
 
 	@Override
-	public CUDReturnMessage ExcuteUnitCourse(ExcuteUnitCourse model) throws Exception {
+	public CUDReturnMessage ExecuteUnitCourse(ExecuteUnitCourse model) throws Exception {
 		// TODO Auto-generated method stub
-		return courseDao.ExcuteUnitCourse(model);
+		return courseDao.ExecuteUnitCourse(model);
+	}
+
+	@Override
+	public CUDReturnMessage ExecuteCourse(ExecuteCourse model) throws Exception {
+		// TODO Auto-generated method stub
+		return courseDao.ExecuteCourse(model);
 	}
 	
 	

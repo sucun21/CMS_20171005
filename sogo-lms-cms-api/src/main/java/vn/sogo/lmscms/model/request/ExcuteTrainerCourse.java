@@ -7,18 +7,18 @@ import java.sql.Timestamp;
 public class ExcuteTrainerCourse implements Serializable {
 	private Integer courseId;
 	private Integer trainerId;
-	private String excuteType;
+	private String executeType;
 	public Integer getCourseId() {
 		return courseId;
 	}
 	public void setCourseId(Integer courseId) {
 		this.courseId = courseId;
 	}
-	public String getExcuteType() {
-		return excuteType;
+	public String getExecuteType() {
+		return executeType;
 	}
-	public void setExcuteType(String excuteType) {
-		this.excuteType = excuteType;
+	public void setExecuteType(String executeType) {
+		this.executeType = executeType;
 	}
 	public Integer getTrainerId() {
 		return trainerId;

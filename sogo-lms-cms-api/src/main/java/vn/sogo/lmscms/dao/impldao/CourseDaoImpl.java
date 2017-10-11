@@ -21,7 +21,8 @@ import vn.sogo.lmscms.model.TrainerCourseInfo;
 import vn.sogo.lmscms.model.UnitInCourse;
 import vn.sogo.lmscms.model.UnitInfo;
 import vn.sogo.lmscms.model.request.ExcuteTrainerCourse;
-import vn.sogo.lmscms.model.request.ExcuteUnitCourse;
+import vn.sogo.lmscms.model.request.ExecuteCourse;
+import vn.sogo.lmscms.model.request.ExecuteUnitCourse;
 import vn.sogo.lmscms.model.request.UserInfo;
 
 public class CourseDaoImpl implements ICourseDao {
@@ -153,34 +154,54 @@ public class CourseDaoImpl implements ICourseDao {
 	}
 
 	@Override
-	public CUDReturnMessage ExcuteTrainerCourse(ExcuteTrainerCourse model) throws Exception {
+	public CUDReturnMessage ExecuteTrainerCourse(ExcuteTrainerCourse model) throws Exception {
 		Integer courseId=model.getCourseId();
 		Integer trainerId=model.getTrainerId();
-		String excuteType=model.getExcuteType();
+		String excuteType=model.getExecuteType();
 		Object[] params = new Object[]{
 				courseId,
 				trainerId,
 				excuteType
     	};
-		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_add_new_trainer_course",params, CUDReturnMessage.class);
+		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_execute_trainer_course",params, CUDReturnMessage.class);
 	}
 
 	@Override
-	public CUDReturnMessage ExcuteUnitCourse(ExcuteUnitCourse model) throws Exception {
+	public CUDReturnMessage ExecuteCourse(ExecuteCourse model) throws Exception {
 		// TODO Auto-generated method stub
 		Integer courseId=model.getCourseId();
-		String unitTitle=model.getUnitTitle();
-		String excuteType=model.getExcuteType();
-		String unitDes="";
-		String unitSumary="";
+		String courseTitle=model.getCourseTitle();
+		String courseDes=model.getCourseDes();
+		String courseShortDes=model.getCourseShortDes();
+		String executeType=model.getExecuteType();
 		Object[] params = new Object[]{
 				courseId,
+				courseTitle,
+				courseDes,
+				courseShortDes,
+				executeType
+    	};
+		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_execute_course",params, CUDReturnMessage.class);
+	}
+
+	@Override
+	public CUDReturnMessage ExecuteUnitCourse(ExecuteUnitCourse model) throws Exception {
+		// TODO Auto-generated method stub
+		Integer courseId=model.getCourseId();
+		Integer unitId=model.getUnitId();
+		String unitTitle=model.getUnitTitle();
+		String excuteType=model.getExecuteType();
+		String unitDes=model.getUnitDes();
+		String unitSumary=model.getUnitSummary();
+		Object[] params = new Object[]{
+				courseId,
+				unitId,
 				unitTitle,
 				excuteType,
 				unitDes,
 				unitSumary
     	};
-		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_excute_unit_course",params, CUDReturnMessage.class);
+		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_execute_unit_course",params, CUDReturnMessage.class);
 	}
 
 }
