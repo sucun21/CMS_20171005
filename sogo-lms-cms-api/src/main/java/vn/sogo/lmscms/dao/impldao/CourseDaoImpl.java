@@ -204,4 +204,12 @@ public class CourseDaoImpl implements ICourseDao {
 		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_execute_unit_course",params, CUDReturnMessage.class);
 	}
 
+	@Override
+	public CourseInfo GetCourseByCourseId(Integer courseId) throws Exception {
+		Object[] params = new Object[]{
+				courseId
+    	};
+		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_get_course_by_course_id",params, CourseInfo.class);
+	}
+
 }

@@ -132,6 +132,12 @@ public class CourseServiceImpl extends BaseService implements ICourseService {
 		// TODO Auto-generated method stub
 		return courseDao.ExecuteCourse(model);
 	}
+
+	@Override
+	public CourseInfo GetCourseByCourseId(Integer courseId) throws Exception {
+		// TODO Auto-generated method stub
+		return courseDao.GetCourseByCourseId(courseId);
+	}
 	
 	
 }

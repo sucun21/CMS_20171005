@@ -1,6 +1,7 @@
 package vn.sogo.lmscms.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class CourseInfo implements Serializable {
@@ -9,6 +10,20 @@ public class CourseInfo implements Serializable {
 	private String courseDes;
 	private String courseShortDes;
 	private String courseImage;
+	private List<TrainerInfo> trainerInfo;
+	private List<UnitInfo>    unitInfo;
+	public List<TrainerInfo> getTrainerInfo() {
+		return trainerInfo;
+	}
+	public void setTrainerInfo(List<TrainerInfo> trainerInfo) {
+		this.trainerInfo = trainerInfo;
+	}
+	public List<UnitInfo> getUnitInfo() {
+		return unitInfo;
+	}
+	public void setUnitInfo(List<UnitInfo> unitInfo) {
+		this.unitInfo = unitInfo;
+	}
 	public String getCourseImage() {
 		return courseImage;
 	}

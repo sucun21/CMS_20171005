@@ -25,6 +25,8 @@ public interface ICourseService {
 
 	List<CourseInfo> GetCourseByUserType(UserInfo model) throws Exception;
 	
+	CourseInfo GetCourseByCourseId(Integer courseId) throws Exception;
+	
 	List<CourseActivity> GetCourseActivity(Integer courseId) throws Exception;
 
 	List<UnitInCourse> GetUnitInCourse(int courseId) throws Exception;

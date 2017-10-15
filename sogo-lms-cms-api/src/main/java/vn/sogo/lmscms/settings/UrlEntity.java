@@ -38,6 +38,7 @@ public class UrlEntity {
     public static final String E_COURSE = "api/course";
     public static final String A_GET_UNIT_FILTER_COURSE = "/get-unit-filter-course";
     public static final String A_GET_COURSE_BY_USER_TYPE = "/get-course-by-user-type";
+    public static final String A_GET_COURSE_BY_COURSE_ID = "/get-course-by-course-id";
     public static final String A_GET_INTRO_CLASS_BY_CENTER_COURSE = "/get-intro-class-by-center-course";
     public static final String A_GET_COURSE_ACTIVITY = "/get-course-activity";
     public static final String A_GET_UNIT_IN_COURSE = "/get-unit-in-course";

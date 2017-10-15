@@ -21,6 +21,7 @@ import vn.sogo.lmscms.model.request.UserInfo;
 
 public interface ICourseDao {
 	List<CourseInfo> GetCourseByUserType(UserInfo model) throws Exception;
+	CourseInfo GetCourseByCourseId(Integer courseId) throws Exception;
 	List<CourseActivity> GetCourseActivity(Integer courseId) throws Exception;
 	List<UnitInCourse> GetUnitInCourse(Integer courseId) throws Exception;
 	List<LessonInUnit> GetLessonInUnit(Integer unitId) throws Exception;

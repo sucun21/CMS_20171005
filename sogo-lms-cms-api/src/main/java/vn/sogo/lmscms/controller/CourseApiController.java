@@ -51,6 +51,13 @@ public class CourseApiController extends BaseController {
         return responseResult(courseService.GetCourseByUserType(model));
     }
     
+    @RequestMapping(value = UrlEntity.A_GET_COURSE_BY_COURSE_ID, method = RequestMethod.POST)
+    @CrossOrigin
+    public @ResponseBody ApiResponse<CourseInfo> GetCourseByCourseId(@RequestBody GetItemInCourse  model ) throws Exception {
+    	int courseId=model.getCourseId();
+        return responseResult(courseService.GetCourseByCourseId(courseId));
+    }
+    
     @RequestMapping(value = UrlEntity.A_GET_COURSE_ACTIVITY, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @CrossOrigin
     public @ResponseBody ApiResponse<List<CourseActivity>> GetCourseActivity(@RequestBody Integer courseId) throws Exception {
