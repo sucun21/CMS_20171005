@@ -5,19 +5,19 @@ import java.sql.Timestamp;
 
 @SuppressWarnings("serial")
 public class TrainerCourseInfo implements Serializable {
-	private Integer trainerId;
-	private Integer courseTrainerId;
-	public Integer getTrainerId() {
-		return trainerId;
-	}
-	public void setTrainerId(Integer trainerId) {
-		this.trainerId = trainerId;
-	}
-	public Integer getCourseTrainerId() {
-		return courseTrainerId;
-	}
-	public void setCourseTrainerId(Integer courseTrainerId) {
-		this.courseTrainerId = courseTrainerId;
-	}	
+	private Integer userId;
+	private String fullName;
 	
+	public Integer getUserId() {
+		return userId;
+	}
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+	public String getFullName() {
+		return fullName;
+	}
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}	
 }

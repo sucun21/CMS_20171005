@@ -7,13 +7,15 @@ CREATE PROCEDURE `web_cms_get_trainer_course`(
 )
 BEGIN
     
-	SELECT course_trainer_id `courseTrainerId`,
-		   trainer_id `trainerId` 
-	FROM sg_course_trainer
-						WHERE is_active = 1
-						AND is_delete = 0
-						AND course_id = p_course_id
-                        ORDER BY course_trainer_id ASC;
+	SELECT trainer_id `userId`,
+				 su.full_name `fullName`
+	FROM sg_course_trainer sct
+	JOIN sg_user su on su.user_id = sct.trainer_id
+	WHERE sct.is_active = 1
+	AND sct.is_delete = 0
+	AND course_id = p_course_id
+	ORDER BY course_trainer_id ASC;
+
 END
 //
 

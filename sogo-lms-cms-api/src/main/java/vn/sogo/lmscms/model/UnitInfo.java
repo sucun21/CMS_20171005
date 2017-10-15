@@ -1,12 +1,28 @@
 package vn.sogo.lmscms.model;
 
+import java.util.List;
+
 public class UnitInfo {
 	private Integer unitId;
     private String unitTitle;
     private String unitDes;
     private String unitSummary;
+    private List<CanDoInfo> canDos;
+    private List<LessonInUnit> lessons;
 	public Integer getUnitId() {
 		return unitId;
+	}
+	public List<CanDoInfo> getCandos() {
+		return canDos;
+	}
+	public void setCando(List<CanDoInfo> canDos) {
+		this.canDos = canDos;
+	}
+	public List<LessonInUnit> getLesson() {
+		return lessons;
+	}
+	public void setLesson(List<LessonInUnit> lessons) {
+		this.lessons = lessons;
 	}
 	public void setUnitId(Integer unitId) {
 		this.unitId = unitId;

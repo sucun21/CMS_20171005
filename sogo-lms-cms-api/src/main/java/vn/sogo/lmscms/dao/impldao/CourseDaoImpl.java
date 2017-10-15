@@ -33,6 +33,7 @@ public class CourseDaoImpl implements ICourseDao {
     public List<CourseInfo> GetCourseByUserType(UserInfo model) throws Exception{
     	
 		List<CourseInfo> result = new ArrayList<CourseInfo>();
+		
 		int userId=model.getUserId();
 		int userTypeId=model.getUserTypeId();
 		Object[] params=new Object[]{
@@ -41,6 +42,16 @@ public class CourseDaoImpl implements ICourseDao {
 		};
     	
     	result = mySqlHelper.ExecuteStoreProc("web_cms_get_course_by_user_type",params, CourseInfo.class);
+    	for(int i=0 ;i<result.size();i++){
+    		int courseId=result.get(i).getCourseId();
+    		List<TrainerCourseInfo> trainCourses=new ArrayList<TrainerCourseInfo>();
+    		List<UnitInCourse> unitCourses=new ArrayList<UnitInCourse>();
+    		trainCourses=GetTrainerInCourse(courseId);
+    		unitCourses=GetUnitInCourse(courseId);
+    		result.get(i).setTrainerInfo(trainCourses);
+    		result.get(i).setUnitInfo(unitCourses);
+    		
+    	}
 
         return result;
     }
@@ -122,10 +133,21 @@ public class CourseDaoImpl implements ICourseDao {
 
 	@Override
 	public UnitInfo GetUnitInfoByUnitId(Integer unitId) throws Exception {
+		UnitInfo result=new UnitInfo();
+		List<CanDoInfo> canDos=new ArrayList<CanDoInfo>();
+		List<LessonInUnit> lessons=new ArrayList<LessonInUnit>();
 		Object[] params = new Object[]{
 				unitId
     	};
-		return mySqlHelper.ExecuteStoreProcSingleResult("web_cms_get_unit_info", params, UnitInfo.class);
+		result= mySqlHelper.ExecuteStoreProcSingleResult("web_cms_get_unit_info", params, UnitInfo.class);
+		if(result!=null){
+			canDos=GetCanDoInUnit(unitId);
+			lessons=GetLessonInUnit(unitId);
+			result.setCando(canDos);
+			result.setLesson(lessons);
+		}
+		return result;
+		
 	}
 
 	@Override

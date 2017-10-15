@@ -10,18 +10,18 @@ public class CourseInfo implements Serializable {
 	private String courseDes;
 	private String courseShortDes;
 	private String courseImage;
-	private List<TrainerInfo> trainerInfo;
-	private List<UnitInfo>    unitInfo;
-	public List<TrainerInfo> getTrainerInfo() {
+	private List<TrainerCourseInfo> trainerInfo;
+	private List<UnitInCourse>    unitInfo;
+	public List<TrainerCourseInfo> getTrainerInfo() {
 		return trainerInfo;
 	}
-	public void setTrainerInfo(List<TrainerInfo> trainerInfo) {
+	public void setTrainerInfo(List<TrainerCourseInfo> trainerInfo) {
 		this.trainerInfo = trainerInfo;
 	}
-	public List<UnitInfo> getUnitInfo() {
+	public List<UnitInCourse> getUnitInfo() {
 		return unitInfo;
 	}
-	public void setUnitInfo(List<UnitInfo> unitInfo) {
+	public void setUnitInfo(List<UnitInCourse> unitInfo) {
 		this.unitInfo = unitInfo;
 	}
 	public String getCourseImage() {
