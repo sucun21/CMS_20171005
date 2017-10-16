@@ -1,0 +1,23 @@
+<div class="dropdown-container" ng-class="{ show: listVisible }">
+	<div class="dropdown-display" ng-click="show();" ng-class="{ clicked: listVisible }">
+		<span ng-if="!isPlaceholder" title="{{display}}">{{display}}</span>
+		<span class="placeholder" ng-if="isPlaceholder">{{placeholder}}</span>
+		<i class="fa fa-angle-down" ng-if="isPlaceholder"></i>
+	</div>
+	<i class="fa fa-times clear-select" ng-if="!isPlaceholder" ng-click="clearSelect()"></i>
+	<div class="dropdown-list">
+		<div class="list-item">
+			<div class="list-filter" ng-show="isShowFilter()">
+				<input type="text" class="filter-input" ng-model="filterInput" />
+				<i ng-if="filterInput" class="clear-filter fa fa-times" ng-click="clearFilter()"></i>
+			</div>
+			<div ng-repeat="item in getList() track by $index" ng-click="select(item)" ng-class="{ selected: isSelected(item) }">
+				<span>{{text !== undefined ? item[text] : ''}}</span>
+				<i class="fa fa-check"></i>
+			</div>
+			<div ng-if="!getList() || getList().length == 0">
+				<span>No record found!</span>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,148 @@
+
+<header id="topbar">
+	<div class="topbar-left">
+		<ol class="breadcrumb">
+			<li class="crumb-icon"><a ui-sref="root.home"> <span
+					class="glyphicon glyphicon-home"></span>
+			</a></li>
+			<li class="crumb-active"><a href="javascript:void(0);">Manage
+					Course</a></li>
+		</ol>
+	</div>
+	<div class="topbar-right"
+		ng-if="hasPermission('root.student.list.add')">
+		<button class="btn btn-success btn-sm" type="button"
+			ng-click="$vm.addNewCourse()">
+			<i class="fa fa-plus fa-fw"></i>Add new course
+		</button>
+	</div>
+</header>
+<div class="tray tray-center va-t posr animated fadeIn">
+	<div class="panel mbn">
+		<div class="panel-menu text-right">
+			<a ui-sref="root.course.manage({ view: 'card' })"
+				ui-sref-active="btn-info"
+				class="btn btn-default btn-sm light fw600 ml10"> <span
+				class="glyphicons glyphicons-table pr5"></span> View Card
+			</a> <a ui-sref="root.course.manage({ view: 'list' })"
+				ui-sref-active="btn-info"
+				class="btn btn-default btn-sm light fw600 ml10"> <span
+				class="glyphicons glyphicons-list pr5"></span> View List
+			</a>
+		</div>
+	</div>
+	<div class="col-md-8 col-md-offset-2 mt10">
+		<div class="panel bg-white p10 box-shadow"
+			ng-repeat="item in $vm.listCourse">
+			<div class="panel-heading bg-danger">
+				<span class="panel-title"> <span class="fs14 fw600">Course
+						Title</span>
+				</span> <span class="panel-controls text-white"> <i
+					class="fa fa-pencil fs18 mt10" ng-click="$vm.enableTitleEdit(item)"
+					ng-if="!item.isEditingTitle"></i> <i class="fa fa-save fs18 mt10"
+					ng-if="item.isEditingTitle" ng-click="$vm.saveTitle(item)"></i> <i
+					class="fa fa-times fs18 mt10 ml10" ng-if="item.isEditingTitle"
+					ng-click="$vm.discardTitleEdit(item)"></i>
+				</span>
+			</div>
+			<div class="panel-body">
+				<input type="text" ng-model="item.courseTitle"
+					id="txtCourseTitle_{{item.courseId}}" select-on-focus
+					class="form-control" ng-disabled="!item.isEditingTitle"
+					ng-keydown="$vm.saveTitle(item, $event)" />
+			</div>
+			<div class="panel-heading bg-danger">
+				<span class="panel-title"> <span class="fs14 fw600">Course
+						Image</span>
+				</span> <span class="panel-controls text-white"> <i
+					class="fa fa-pencil fs18 mt10" ng-click="$vm.enableImageEdit(item)"
+					ng-if="!item.isEditingCourseImage"></i> <i
+					class="fa fa-save fs18 mt10" ng-if="item.isEditingCourseImage"
+					ng-click="$vm.saveImage(item)"></i> <i
+					class="fa fa-times fs18 mt10 ml5" ng-if="item.isEditingCourseImage"
+					ng-click="$vm.discardImageEdit(item)"></i>
+				</span>
+			</div>
+			<div class="panel-body admin-form">
+				<div class="col-md-6 pn">
+					<course-image-picker is-enable="item.isEditingCourseImage"
+						course-image="item.courseImage" file-model="item.fileModel">
+					</course-image-picker>
+				</div>
+			</div>
+			<div class="panel-heading bg-danger">
+				<span class="panel-title"> <span class="fs14 fw600">Course
+						Trainer</span>
+				</span>
+			</div>
+			<div class="panel-body">
+				<ui-select remove-selected="true" multiple style="width:100%;"
+					tagging="$vm.tagTransform" tagging-label="false"
+					ng-model="item.listTrainer" theme="select2" style="width: 300px;"
+					title="Choose trainer"
+					on-select="$vm.onSelectCourseTrainer($item, item)"
+					on-remove="$vm.onRemoveCourseTrainer($item, item)"> <ui-select-match
+					placeholder="Select trainer">{{$item.fullName}}</ui-select-match> <ui-select-choices
+					repeat="item.fullName as item in $vm.listTrainer | filter:$select.search">
+				{{item.fullName}} &lt;{{item.userEmail}}&gt; </ui-select-choices> </ui-select>
+			</div>
+			<div class="panel-heading bg-danger">
+				<span class="panel-title"> <span class="fs14 fw600">Short
+						Description</span>
+				</span> <span class="panel-controls text-white"> <i
+					class="fa fa-pencil fs18 mt10"
+					ng-if="!item.isEditingShortDescription"
+					ng-click="$vm.enableShortDescriptionEdit(item)"></i> <i
+					class="fa fa-save fs18 mt10" ng-if="item.isEditingShortDescription"
+					ng-click="$vm.saveShortDescription(item)"></i> <i
+					class="fa fa-times fs18 mt10 ml5"
+					ng-if="item.isEditingShortDescription"
+					ng-click="$vm.discardShortDescriptionEdit(item)"></i>
+				</span>
+			</div>
+			<div class="panel-body">
+				<div class="content-wrapper"
+					ng-bind-html="item.courseShortDes | trusted"
+					ng-show="!item.isEditingShortDescription"></div>
+				<div ng-show="item.isEditingShortDescription">
+					<textarea ui-tinymce="tinymceOptions"
+						ng-model="item.courseShortDes" data-type="shortDes"
+						data-course-id="{{item.courseId}}"></textarea>
+				</div>
+			</div>
+			<div class="panel-heading bg-danger">
+				<span class="panel-title"> <span class="fs14 fw600">Description</span>
+				</span> <span class="panel-controls text-white"> <i
+					class="fa fa-pencil fs18 mt10" ng-if="!item.isEditingDescription"
+					ng-click="$vm.enableDescriptionEdit(item)"></i> <i
+					class="fa fa-save fs18 mt10" ng-if="item.isEditingDescription"
+					ng-click="$vm.saveDescription(item)"></i> <i
+					class="fa fa-times fs18 mt10 ml5" ng-if="item.isEditingDescription"
+					ng-click="$vm.discardDescriptionEdit(item)"></i>
+				</span>
+			</div>
+			<div class="panel-body">
+				<div class="content-wrapper" ng-bind-html="item.courseDes | trusted"
+					ng-show="!item.isEditingDescription"></div>
+				<div ng-show="item.isEditingDescription">
+					<textarea ui-tinymce="tinymceOptions" ng-model="item.courseDes"
+						data-type="des" data-course-id="{{item.courseId}}"></textarea>
+				</div>
+			</div>
+			<div class="panel-heading bg-danger">
+				<span class="panel-title"> <span class="fs14 fw600">Unit</span>
+				</span>
+				<span class="panel-controls text-white">
+					<i class="fa fa-plus fs18 mt10 mr5" title="Add new unit" ng-click="$vm.addNewUnit(item)"></i>
+				</span>					
+			</div>
+			<div class="panel-body">
+				<input class="form-control" type="text" select-on-focus ng-repeat="unit in item.listUnit" 
+					ng-class="{'mt10': $index > 0}" ng-model="unit.unitTitle" ng-keydown="$vm.saveUnitTitle(unit, $event)" />
+				<p class="mn" style="position:relative;" ng-if="!item.listUnit || item.listUnit.length == 0">
+					No unit found
+					<span class="tip-add-unit">Click to add new unit</span>
+				</p>
+			</div>
+		</div>
+	</div>

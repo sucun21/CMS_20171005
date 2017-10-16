@@ -1,0 +1,95 @@
+<!-- Start: Topbar -->
+<header id="topbar">
+	<div class="topbar-left">
+		<ol class="breadcrumb">
+			<li class="crumb-icon"><a ui-sref="root.home"> <span class="glyphicon glyphicon-home"></span>
+			</a></li>
+			<li class="crumb-active"><a href="javascript:void(0);">Catalouge</a></li>
+		</ol>
+	</div>
+</header>
+<!-- End: Topbar -->
+<div class="tray tray-center va-t posr animated fadeIn">
+	<div class="panel">
+		<div class="panel-menu p12 admin-form theme-primary">
+			<div class="row">
+				<div class="col-md-3">
+					<label class="field-label">Course</label>
+                    <ui-select ng-model="$vm.params.courseId" theme="select2" search-enabled="$vm.listCourse.length > minSearchItem" on-select="$vm.filterCatalouge()">
+			            <ui-select-match>{{$select.selected.courseTitle}}</ui-select-match>
+      					    <ui-select-choices repeat="course.courseId.toString() as course in $vm.listCourse | filter: $select.search">
+			              <div ng-bind-html="course.courseTitle"></div>
+			            </ui-select-choices>
+			          </ui-select>
+                </div>
+                <div class="col-md-3">
+                	<label class="field-label">Unit</label>
+<!--                     <select class="form-control select2" ng-model="$vm.params.unitId" -->
+<!--                     	ng-options="u.unitId.toString() as u.unitTitle for u in $vm.listUnit" -->
+<!--                     	ng-change="$vm.filterCatalouge()"> -->
+<!--                     	<option value>All Unit</option> -->
+<!--                     </select> -->
+					<ui-select ng-model="$vm.params.unitId" theme="select2" search-enabled="$vm.listUnit.length > minSearchItem" on-select="$vm.filterCatalouge()">
+			            <ui-select-match>{{$select.selected.unitTitle}}</ui-select-match>
+      					    <ui-select-choices repeat="unit.unitId.toString() as unit in $vm.listUnit | filter: $select.search">
+			              <div ng-bind-html="unit.unitTitle"></div>
+			            </ui-select-choices>
+			          </ui-select>
+                </div>
+                <div class="col-md-3">
+                	<label class="field-label">Lesson</label>
+<!--                     <select class="form-control select2" ng-model="$vm.params.lessonId" -->
+<!--                     	ng-options="l.lessonId.toString() as l.lessonTitle for l in $vm.listLesson" -->
+<!--                     	ng-change="$vm.filterCatalouge()"> -->
+<!--                     	<option value>All Lesson</option> -->
+<!--                     </select> -->
+						<ui-select ng-model="$vm.params.lessonId" theme="select2" search-enabled="$vm.listLesson.length > minSearchItem" on-select="$vm.filterCatalouge()">
+			            <ui-select-match>{{$select.selected.lessonTitle}}</ui-select-match>
+      					    <ui-select-choices repeat="lesson.lessonId.toString() as lesson in $vm.listLesson | filter: $select.search">
+			              <div ng-bind-html="lesson.lessonTitle"></div>
+			            </ui-select-choices>
+			          </ui-select>
+                </div>
+           </div>
+		</div>
+		<div class="panel-body pn">
+			<div class="table-responsive">
+				<table class="table table-bordered mbn">
+					<thead>
+						<tr>
+							<th>Unit</th>
+							<th>Lesson</th>
+							<th>Activity</th>
+							<th>Type</th>
+							<th>Estimate</th>									
+							<th>Launch</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="activity in $vm.listActivity">
+							<td>
+								{{activity.unitTitle}}
+							</td>
+							<td>{{activity.lessonTitle}}</td>
+							<td>{{activity.activityName}}</td>
+							<td class="text-center">{{activity.activityTypeName}}</td>
+							<td class="text-center">{{activity.activityTime}} {{activity.activityTime > 1 ? 'mins' : 'min'}}</td>
+							<td class="text-center">
+								<a class="btn btn-success btn-sm"
+								target="_blank" href="/catalouge/preview/{{activity.unitId}}/{{activity.lessonId}}/{{activity.activityId}}">
+									<i class="fa fa-external-link"></i>
+								</a>
+							</td>
+						</tr>
+						<tr ng-if="$vm.listActivity == null || $vm.listActivity.length == 0">
+							<td colspan="99">
+								No activity found!
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+

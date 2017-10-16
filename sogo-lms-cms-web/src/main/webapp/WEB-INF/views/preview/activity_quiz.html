@@ -1,0 +1,72 @@
+<div ng-if="vm.listActivity" class="Activity_time" ng-include="'views/preview/activity_time.html'"></div>
+<div class="CD_content" style="width:100%;">
+	<div class="CD_content_header">
+		<div class="icon">
+			<img src="/preview/images/CD_start_1.png" />
+		</div>
+		<div class="info">
+			<h4>{{vm.activityDetails.activityName}}</h4>
+			<p ng-bind-html="vm.activityDetails.activityDes"></p>
+		</div>
+	</div>
+</div>
+<div class="mdl-cell mdl-cell--9-col block_content_shadow" ng-if="!vm.isDoneQuiz">
+	<div class="CD_block_box">
+		<div class="content p20">
+			<h5 style="margin-top: 0px;font-weight: 600;">Question:</h5>
+			<p ng-bind-html="vm.currentQuizQuestion.questionContent"></p>
+			<p ng-if="vm.isRedoingQiz && vm.currentQuizQuestion.questionHint" style="color: #ed1c24;">
+				<span>Hint</span>:
+				{{vm.currentQuizQuestion.questionHint}}
+			</p>
+		</div>
+	</div>
+</div>
+<div class="mdl-cell mdl-cell--3-col mdl-cell--4-col-phone mdl-cell--8-col-tablet fade block_content_shadow in" ng-if="!vm.isDoneQuiz" 
+	ng-include="vm.getQuizAnswerTemplate(vm.currentQuizQuestion.questionTypeId, vm.currentQuizQuestion.questionId)"
+	onload="vm.finishLoadingQuizAnswer()">
+</div>
+<div class="mdl-cell mdl-cell--12-col" ng-if="vm.isDoneQuiz">
+	<div class="block_box CD_block_box content_quiz content_100" ng-if="!vm.hasErrorQuiz">
+		<div class="content">
+			<h3>Congratulations</h3>
+			<p>You just completed</p>
+			<p class="percent">100%</p>
+		</div>
+	</div>
+	<div class="block_box CD_block_box content_quiz content_error" ng-if="vm.hasErrorQuiz">
+		<div class="content">
+			<h3>Oops</h3>
+			<p>You need to review a few questions</p>	
+			<p>Please check your answer again</p>
+			<a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn-info btn_error" ng-click="vm.redoQuiz()">Retry</a>
+		</div>
+	</div>
+</div>
+<div class="mdl-cell mdl-cell--12-col mdl-cell--8-col-tablet">
+	<div class="CD_footer CD_footer_progress">
+		<div class="mdl-grid">
+			<div class="mdl-cell mdl-cell--9-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
+				<ul class="quiz_completion">
+					<li ng-repeat="question in vm.listQuestion" class="{{vm.computeQuestionPagingClass($index, question)}}">
+						<a ng-if="vm.isShowPaging($index)">
+							{{$index + 1}}
+							<span class="ico" ng-if="question.isTraineeAnswerRight != undefined"></span>
+						</a>
+						<a ng-if="vm.isHidePaging($index)">...</a>
+					</li>
+				</ul>
+			</div>
+			<div class="mdl-cell mdl-cell--3-col mdl-cell--2-col-tablet mdl-cell--4-col-phone">
+				<a ng-if="!vm.isLastQuizQuestion && !vm.isDoneQuiz" ng-click="vm.nextQuizQuestion()"
+					class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn-info btn-info_progress id-rate-page btn-blue">
+					Next Question</a>
+				<a ng-if="vm.isLastQuizQuestion && !vm.isDoneQuiz" ng-click="vm.nextQuizQuestion()" 
+					class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn-info btn-info_progress id-rate-page btn-blue">Next</a>
+				<a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn-info btn-info_progress id-rate-page btn-blue"
+					ng-if="vm.isDoneQuiz && !vm.hasErrorQuiz"
+						ng-click="vm.nextActivity()">Next</a>
+			</div>
+		</div>
+	</div>
+</div>

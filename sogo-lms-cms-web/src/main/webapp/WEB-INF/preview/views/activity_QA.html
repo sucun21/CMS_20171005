@@ -1,0 +1,25 @@
+<div ng-if="vm.listActivity" class="Activity_time" ng-include="'views/preview/activity_time.html'"></div>
+<div class="CD_content" style="width:100%;">
+	<div class="CD_content_header">
+		<div class="icon">
+			<img src="/preview/images/CD_QA.png" />
+		</div>
+		<div class="info">
+			<h4>{{vm.activityDetails.activityName}}</h4>
+			<p ng-bind-html="vm.activityDetails.activityDes" id="pActivityDes"></p>
+		</div>
+	</div>
+</div>
+<div class="block_box CD_block_box CD_QA">
+	<div class="content">
+		<h5 class="title_ask" ng-bind-html="vm.processingActivityData(vm.activityDetails.activityData)" id="pActivityData"></h5>
+		<textarea rows="10" placeholder="Please write your answer here." ng-model="vm.traineeAnswer"></textarea>
+		<div class="popup-error-activity-answer" ng-if="vm.traineeAnswerErrorText">
+   			<p><i class="material-icons">&#xE000;</i><i>{{vm.traineeAnswerErrorText}}</i></p>
+   		</div>
+	</div>
+
+</div>
+<div class="CD_footer">
+	<a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn-info btn-blue" >NEXT</a>
+</div>

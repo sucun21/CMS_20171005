@@ -1,0 +1,84 @@
+
+	<div class="table-responsive">
+		<table class="table table-bordered mbn">
+			<thead>
+				<tr>
+					<th>Course</th>
+					<th>Module</th>
+					<th>Class</th>
+					<th>Class Time</th>
+					<th>Attend Status</th>
+					<th>Retake</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="class in $vm.listStudentClass">
+					<td>{{class.courseTitle}}</td>
+					<td>{{class.unitTitle}}</td>
+					<td>{{class.groupClassName}}</td>
+					<td class="text-center">{{class.studyDateTime | dateTimeShortVN}}</td>
+					<td class="text-center">
+						<strong class="text-muted" ng-if="class.isAttended == null">Not check</strong>
+						<strong class="text-danger" ng-if="class.isAttended == false">Not show</strong>
+						<strong class="text-success" ng-if="class.isAttended == true">Show</strong>
+					</td>
+					<td class="text-center">
+						<button type="button" class="btn btn-info btn-sm" ng-class="{'disabled': class.isAttended != false}"
+							ng-if="!class.isRetake"
+							ng-click="$vm.retakeClass(class)">Retake</button>
+						<strong class="text-success" ng-if="class.isRetake">Retaken</strong>
+					</td>
+				</tr>
+											<tr ng-if="!$vm.listStudentClass || $vm.listStudentClass.length == 0">
+								<td colspan="99">No class found!</td>
+							</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="modal fade in" aria-hidden="false" ng-show="$vm.showPopupRetake" style="display:block;">
+		<div class="modal-dialog" style="width:1024px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" ng-click="$vm.showPopupRetake = false">
+						<i class="fa fa-times"></i>
+					</button>
+					<h5 class="modal-title text-center">Retake class for <strong>{{$vm.retakeUnitTitle}}</strong></h5>
+				</div>
+				<div class="modal-body">
+					<table class="table table-bordered mbn">
+						<thead>
+							<tr>
+								<th></th>
+								<th>No. Student <br/> in class</th>
+								<th>Class Time</th>								
+								<th>Center</th>
+								<th>Trainer</th>
+								<th>Group name</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="class in $vm.listRetakeClass">
+								<td class="text-center">
+									<div class="radio-custom radio-primary mb5" style="margin-top: -15px;padding-left: 15px;">
+										<input id="chk_retake_{{class.classId}}" type="radio" name="retake_class_check" ng-value="{{class.classId}}" 
+											ng-model="$vm.retakeInfo.classId"> 
+										<label class="pl25" for="chk_retake_{{class.classId}}"></label>
+									</div>
+								</td>
+								<td class="text-right">{{class.totalUserBooked}}</td>
+								<td class="text-center">{{class.studyDateTime | dateTimeShortVN}}</td>
+								<td>{{class.centerName}}</td>
+								<td>{{class.trainerName}}</td>
+								<td>{{class.groupClassName}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-success" ng-click="$vm.bookRetakeClass()">Book</button>
+					<button type="button" class="btn btn-sm btn-default" ng-click="$vm.showPopupRetake = false">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-backdrop fade in" ng-show="$vm.showPopupRetake"></div>

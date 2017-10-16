@@ -1,0 +1,171 @@
+
+     <!-- Start: Topbar -->
+     <header id="topbar">
+         <div class="topbar-left">
+             <ol class="breadcrumb">
+                 <li class="crumb-icon">
+                     <a ui-sref="root.home">
+                         <span class="glyphicon glyphicon-home"></span>
+                     </a>
+                 </li>
+                 <li class="crumb-active"><a href="javascript:void(0);">Manage Student</a></li>
+             </ol>
+         </div>
+         <div class="topbar-right" ng-if="hasPermission('root.student.list.add')">
+         	<a ui-sref="root.student.list.add" ui-sref-opts="{reload: true}" class="btn btn-success btn-sm"><i class="fa fa-plus fa-fw"></i>Add new student</a>
+         </div>
+     </header>
+     <!-- End: Topbar -->
+	<div class="tray tray-center va-t posr animated fadeIn">
+		<div class="panel">
+			<div class="panel-menu p12 admin-form theme-primary">
+				<form novalidate ng-submit="$vm.SearchStudent()">
+					<button type="submit" class="hide"></button>
+	                 <div class="row">
+	                 	<div class="col-md-3">
+							<label class="field-label">Search</label>
+		                     <label for="searchKey" class="field prepend-icon">
+		                         <input class="form-control" id="txtSearchKey" select-on-focus name="searchKey" ng-model="$vm.params.searchKey" placeholder="Student name, phone, email" type="text">
+		                         <label for="searchKey" class="field-icon"><i class="fa fa-search"></i></label>
+		                     </label>
+		                 </div>
+	                 	<div class="col-md-3">
+	                 		<label class="field-label">Center</label>
+	                 		<ui-select ng-model="$vm.params.centerId" theme="select2" search-enabled="$vm.listCenter.length > minSearchItem" on-select="$vm.SearchStudent()">
+					            <ui-select-match>{{$select.selected.centerName}}</ui-select-match>
+        					    <ui-select-choices repeat="center.centerId.toString() as center in $vm.listCenter | filter: $select.search">
+					              <div ng-bind-html="center.centerName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+							 <label class="field-label">Course</label>
+		                     <ui-select ng-model="$vm.params.courseId" theme="select2" search-enabled="$vm.listCourse.length > minSearchItem" on-select="$vm.SearchStudent()">
+					            <ui-select-match>{{$select.selected.courseTitle}}</ui-select-match>
+        					    <ui-select-choices repeat="course.courseId.toString() as course in $vm.listCourse | filter: $select.search">
+					              <div ng-bind-html="course.courseTitle"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+		                 	<label class="field-label">Status</label>
+		                     <ui-select ng-model="$vm.params.studentStatus" theme="select2" search-enabled="false" on-select="$vm.SearchStudent()">
+					            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+        					    <ui-select-choices repeat="status.value as status in $vm.listStudentStatus">
+					              <div ng-bind-html="status.name"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 </div>
+	            </form>
+			</div>
+			<div class="panel-body pn">
+				<div class="table-responsive">
+					<table class="table table-bordered mbn">
+						<thead>
+							<tr>
+								<th class="w22"></th>
+								<th>Name</th>
+								<th>Gender</th>
+								<th class="w100">Phone</th>
+								<th>Email</th>
+								<th>Status</th>
+								<th>Date of Birth</th>
+								<th>Created Date</th>
+								<th>Created By</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat-start="student in $vm.listStudent">
+								<td class="text-center">
+									<div bootstrap-collapse class="btn-group text-center w22 collapsed" class="accordion-toggle" data-toggle="collapse" data-target="#student_contract_{{student.userId}}" aria-expanded="true">
+                                        <button type="button" class="btn btn-info br2 btn-xs fs12">
+                                            <span class="fa collapse-icon mrn"></span>
+                                        </button>
+                                    </div>
+								</td>
+								<td>
+									<strong>
+										{{student.fullName}}
+									</strong>
+								</td>
+								<td class="text-center">{{student.gender | gender}}</td>
+								<td>{{student.userPhone}}</td>
+								<td>{{student.userEmail}}</td>
+								<td class="text-center fw600" ng-class="student.isActive ? 'text-success' : 'text-danger'">
+									{{student.isActive ? 'Active' : 'Deactive'}}
+								</td>
+								<td class="text-center">{{student.dateOfBirth | dateVN}}</td>
+								<td class="text-center">{{student.createdDate | dateTimeVN}}</td>
+								<td>{{student.createdByName}}</td>
+							</tr>
+							<tr ng-repeat-end>
+								<td class="bg-light pn"></td>
+								<td colspan="8" class="pn">
+									<div id="student_contract_{{student.userId}}" class="collapse">
+										<table class="table table-bordered table-sub">
+											<thead>
+												<tr>
+													<th rowspan="2">Contract No.</th>
+													<th rowspan="2">Course</th>
+													<th rowspan="2">Center</th>
+													<th rowspan="2">Start Date</th>
+													<th rowspan="2">End Date</th>
+													<th rowspan="2">Status</th>
+													<th colspan="4">Class</th>
+													<th colspan="3">Unit</th>
+												</tr>
+												<tr>
+													<th>Missed</th>
+													<th>Attended</th>					
+													<th>Retake</th>
+													<th>Total</th>
+													<th>Completed</th>
+													<th>Uncompleted</th>					
+													<th>Total</th>
+												</tr>
+											</thead>
+											<tbody>
+											<tr ng-repeat="course in student.studentCourse">
+												<td class="text-center">
+													<a ui-sref="root.student.list.detail({id: student.userId, courseTraineeId: course.courseTraineeId, course: course.courseId})">
+														<strong>
+															{{course.contractNo}}
+														</strong>
+													</a>
+												</td>
+												<td >
+													{{course.courseTitle}}
+												</td>
+												<td class="">{{course.centerName}}</td>
+												<td class="text-center">{{course.startDate | dateVN}}</td>
+												<td class="text-center">{{course.endDate | dateVN}}</td>
+												<td class="text-center fw600" ng-class="course.isCourseActive ? 'text-success' : 'text-danger'">
+													{{course.isCourseActive ? 'Active' : 'Deactive'}}
+												</td>
+												<td class="text-right text-danger fw600">{{course.missedClass}}</td>
+												<td class="text-right text-success fw600">{{course.attendedClass}}</td>
+												<td class="text-right text-warning fw600">{{course.retakeClass}}</td>
+												<td class="text-right text-primary fw600">{{course.totalClass}}</td>
+												<td class="text-right text-success fw600">{{course.completedUnit}}</td>
+												<td class="text-right text-danger fw600">{{course.uncompletedUnit}}</td>
+												<td class="text-right text-primary fw600">{{course.totalUnit}}</td>
+											</tr>
+											</tbody>
+										</table>
+									</div>
+								</td>
+							</tr>
+							<tr ng-if="($vm.listStudent == null || $vm.listStudent.length == 0)">
+								<td colspan="99">
+									No student found!
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<pagination ng-if="$vm.totalRow > 0" params="$vm.params" total-row="$vm.totalRow"></pagination>
+		</div>
+	</div>
+<ui-view></ui-view>

@@ -1,0 +1,104 @@
+<div class="panel mn">
+		<div class="panel-menu p12 admin-form theme-primary">
+			<form novalidate ng-submit="$vm.FilterSchedule()">
+               <div class="row">
+                <div class="col-md-3" ng-class="vm.isAdmin ? 'col-md-offset-3' : 'col-md-offset-9'">
+				 	<label class="field-label">Course</label>
+                    <select class="form-control select2"
+                    	ng-model="$vm.params.courseId"
+                    	ng-options="c.courseId.toString() as c.courseTitle for c in $vm.listCourse"
+                    	ng-change="$vm.FilterSchedule()">
+                    	<option value>All</option>
+                    </select>
+                </div>
+                <div class="col-md-3" ng-if="vm.isAdmin">
+               		<label class="field-label">Center</label>
+                    <select class="form-control select2"
+                    	ng-model="$vm.params.centerId"
+                    	ng-options="center.centerId.toString() as center.centerName for center in $vm.listCenter"
+                    	ng-change="$vm.FilterSchedule()">
+                    	<option value>All</option>
+                    </select>
+                </div>
+                <div class="col-md-3" ng-if="vm.isAdmin">
+               		<label class="field-label">Trainer</label>
+                    <select class="form-control select2"
+                    	ng-model="$vm.params.trainerId"
+                    	ng-options="trainer.userId.toString() as trainer.fullName for trainer in $vm.listTrainer"
+                    	ng-change="$vm.FilterSchedule()">
+                    	<option value>All</option>
+                    </select>
+                </div>
+               </div>
+          </form>
+	</div>
+</div>
+<!-- End: Topbar -->
+<section class="table-layout">
+	<aside class="tray tray-left tray290 va-t bg-white" data-tray-height="match">
+		<div class="panel">
+			<div class="panel-heading bg-warning">
+				Pending check attendance
+			</div>
+			<div class="panel-body pn">
+				<div class="bg-dotted class-list-cont">
+					<!-- Standard Events -->
+					<a class="fc-event fc-event-success" ng-if="!$vm.isLoadingPendingCheckAttendaceClass && !$vm.listPendingCheckAttendanceClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-check fa-fw"></i>No pending class found!</b>
+						</div>
+					</a>
+					<a class="fc-event" ng-if="$vm.isLoadingPendingCheckAttendaceClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-refresh fa-spin fa-fw"></i>Loading...</b>
+						</div>
+					</a>
+					<a class="fc-event fc-event-warning" ng-repeat="item in $vm.listPendingCheckAttendanceClass" ui-sref="root.schedule.classInfo({id: item.classId })">
+						<div class="fc-event-desc pn">
+							<b class="fc-event-desc-detail" title="{{item.unitTitle}}">
+								<i class="fa fa-file-text-o fa-fw"></i>{{item.unitTitle}}<br/>
+								<span ng-if="$vm.isAdmin"><i class="fa fa-user fa-fw"></i>{{item.teacherName}}<br/></span>
+								<i class="fa fa-clock-o fa-fw"></i>{{item.studyDateTime | dateTimeShortVN}} <br/>
+								<i class="fa fa-home fa-fw"></i>{{item.centerName}}
+							</b>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+		<div class="panel">
+			<div class="panel-heading bg-primary">
+				Upcoming classes in {{$vm.nextDayNum}} days
+			</div>
+			<div class="panel-body pn">
+				<div class="bg-dotted class-list-cont">
+					<!-- Standard Events -->
+					<a class="fc-event fc-event-danger" ng-if="!$vm.isLoadingIncomingClass && !$vm.listIncomingClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-exclamation fa-fw"></i>No incoming class found!</b>
+						</div>
+					</a>
+					<a class="fc-event" ng-if="$vm.isLoadingIncomingClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-refresh fa-spin fa-fw"></i>Loading...</b>
+						</div>
+					</a>
+					<a class="fc-event fc-event-primary" ng-repeat="item in $vm.listIncomingClass" ui-sref="root.schedule.classInfo({id: item.classId })">
+						<div class="fc-event-desc pn">
+							<b class="fc-event-desc-detail" title="{{item.unitTitle}}">
+								<i class="fa fa-file-text-o fa-fw"></i>{{item.unitTitle}}<br/>
+								<span ng-if="$vm.isAdmin"><i class="fa fa-user fa-fw"></i>{{item.teacherName}}<br/></span>
+								<i class="fa fa-clock-o fa-fw"></i>{{item.studyDateTime | dateTimeShortVN}}<br/>
+								<i class="fa fa-home fa-fw"></i>{{item.centerName}}
+							</b>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+	</aside>
+	<div class="tray tray-center p20 va-t posr animated fadeIn bg-white">
+		<div id='calendar' class="admin-theme"></div>
+	</div>
+</section>
+<ui-view></ui-view>

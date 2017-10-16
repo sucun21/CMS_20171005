@@ -1,0 +1,92 @@
+<div class="modal fade modal-confirm-cont in" aria-hidden="false" style="display: block;">
+	<div class="modal-dialog full-screen-popup">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" ng-click="closePopup()">
+					<i class="fa fa-times"></i>
+				</button>
+				<h3 class="modal-title text-center">Class Information</h3>
+			</div>
+			<div class="panel">
+				<div class="panel-body">
+					<div class="col-md-3">
+						<div class="panel">
+							<div class="panel-body">
+								<h3 class="student-name">{{$ctrl.classInfo.unitTitle}}</h3>
+							</div>
+						</div>
+						<div class="panel">
+							<div class="panel-heading panel-heading-sm bg-system prn b0">
+							    <span class="panel-title text-uppercase">Class info</span>
+							</div>
+							<div class="panel-body">
+								<form class="form-horizontal form-text-only">
+									<div class="form-group">
+							            <label class="col-md-12">Trainer</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$ctrl.classInfo.teacherName}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Course</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$ctrl.classInfo.courseTitle}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Class type</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$ctrl.classInfo.classTypeName}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Class date</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$ctrl.classInfo.studyDateTime | dateTimeShortVN}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Center</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$ctrl.classInfo.centerName}}
+							                </span>
+							            </div>
+							        </div>
+							    </form>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-9">
+						<div class="panel">
+							<div class="panel-heading">
+								<ul class="nav panel-tabs-border panel-tabs panel-tabs-left">
+									<li ng-click="$ctrl.changeTab(1)" ng-class="{'active': $ctrl.currentTab == 1}"><a href="javascript:void(0);">Attendant List</a></li>
+									<li ng-click="$ctrl.changeTab(2)" ng-class="{'active': $ctrl.currentTab == 2}"><a href="javascript:void(0);">Quiz Report</a></li>
+									<li ng-click="$ctrl.changeTab(3)" ng-class="{'active': $ctrl.currentTab == 3}" ng-if="$ctrl.listQuizReportDetail"><a href="javascript:void(0);">Quiz Report Detail</a></li>
+								</ul>
+							</div>
+							<div class="panel-body">
+								<div class="hide" ng-include="'/views/home/classInfo/_listAttendant.html'" ng-class="{'show': $ctrl.currentTab == 1}"></div>
+								<div class="hide" ng-include="'/views/home/classInfo/_quizReport.html'" ng-class="{'show': $ctrl.currentTab == 2}"></div>
+								<div class="hide" ng-include="'/views/home/classInfo/_quizReportDetail.html'" ng-class="{'show': $ctrl.currentTab == 3}" ng-if="$ctrl.listQuizReportDetail"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-default" ng-click="closePopup()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-backdrop fade in"></div>

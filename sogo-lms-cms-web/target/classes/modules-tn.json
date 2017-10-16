@@ -1,0 +1,122 @@
+[
+	{
+		"group": "Dashboard",
+		"icon": "fa fa-calendar",
+		"states": [
+			{
+				"name": "root.home",
+				"url": "/?courseId",
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/home/dashboardTeacher.html",
+						"controller": "dashboardTeacherCtrl",
+						"controllerAs": "$ctrl"
+					}
+				],
+				"data": {
+		            "pageTitle": "Class schedule"
+		        },
+		        "isShowMenu": true,
+				"menuName": "Dashboard"
+			},
+			{
+				"name": "root.home.classInfo",
+				"url": "class-info/:classId",
+				"views":[
+					{
+						"name": "popup@root",
+						"templateUrl": "views/home/classInfoTeacher.html",
+						"controller": "classInfoTeacherCtrl",
+						"controllerAs": "$ctrl"
+					}
+				],
+				"data": {
+		            "pageTitle": "Class information"
+		        }
+			},
+			{
+				"name": "root.home.classInfo.studentDetails",
+				"url": "/details/:tab/:id/:course/:courseTraineeId?st",
+				"data": {
+                    "pageTitle": "Student Info"
+                },
+				"views":[
+					{
+						"name": "popup2@root",
+						"templateUrl": "views/student/details.html",
+						"controller": "studentDetailsCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				]
+			}
+		]
+	},
+	{
+		"group": "Student",
+		"icon": "fa fa-graduation-cap",
+		"parentState": "root.student",
+		"states": [
+			{
+				"name": "root.student",
+				"url": "/student",
+				"abstract":true
+			},
+			{
+				"name": "root.student.list",
+				"url": "/list?searchKey&p&ps&studentStatus&courseId&centerId",
+				"data": {
+                    "pageTitle": "Student List"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/student/list.html",
+						"controller": "studentListCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"isShowMenu": true,
+				"menuName": "Student List"
+			},
+			{
+				"name": "root.student.list.details",
+				"url": "/details/:tab/:id/:course/:courseTraineeId?st",
+				"data": {
+                    "pageTitle": "Student Info"
+                },
+				"views":[
+					{
+						"name": "popup@root",
+						"templateUrl": "views/student/details.html",
+						"controller": "studentDetailsCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				]
+			}
+		]
+	},
+	{
+		"group": "Catalouge",
+		"icon": "fa fa-eye",
+		"states": [
+			{
+				"name": "root.catalouge",
+				"url": "/catalouge?courseId&unitId&lessonId",
+				"data": {
+                    "pageTitle": "Catalouge"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/catalouge/index.html",
+						"controller": "catalougeCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"isShowMenu": true,
+				"menuName": "Catalouge"
+			}
+		]
+	}
+]

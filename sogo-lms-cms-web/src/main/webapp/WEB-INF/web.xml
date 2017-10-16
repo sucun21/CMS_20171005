@@ -1,0 +1,40 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	
+	<display-name>LMS CMS</display-name>
+	<description>LMS CMS</description>
+
+	<servlet>
+		<servlet-name>dispatcherServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/spring-cfg.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>dispatcherServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	
+	<context-param> 
+      <description>Location to store uploaded file</description> 
+      <param-name>file-upload</param-name> 
+      <param-value>C:\JettyService\LMS\LMS_UPLOAD\</param-value> 
+   </context-param>
+   
+    
+	<servlet>
+	   <servlet-name>UploadServlet</servlet-name>
+	   <servlet-class>cms.sogo.lmscms.common.UploadServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+	   <servlet-name>UploadServlet</servlet-name>
+	   <url-pattern>/Upload</url-pattern>
+	</servlet-mapping>
+
+</web-app>

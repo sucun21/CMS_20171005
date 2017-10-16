@@ -1,0 +1,15 @@
+{
+    "bundles": [
+        {
+            "type": "css",
+            "name": "app.min.css",
+            "files": [
+                "reset.css",
+                "fonts.css",
+                "material.min.css",
+                "customize.css",
+                "common.css"
+            ]
+        }
+    ]
+}

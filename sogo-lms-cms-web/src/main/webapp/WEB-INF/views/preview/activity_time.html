@@ -1,0 +1,7 @@
+<ul>
+	<li ng-repeat="activity in vm.listActivity" class="{{vm.computeActivityTimeClass($index, $first, $last, activity)}}">
+		<p ng-class="{'ml14': activity.activityId != vm.activityId}">
+			<span>{{activity.activityTime | activityTime}}</span> <span ng-if="activity.activityId == vm.activityId">mins</span>
+		</p>
+	</li>
+</ul>

@@ -1,0 +1,150 @@
+<div ng-if="$vm.listQuizReportDetail">
+	<form class="form-horizontal form-text-only">
+		<div class="form-group">
+			<div class="col-md-12">
+				<div class="col-md-12">
+					<label class="control-label fw600">Unit name:&nbsp;</label>
+					{{$vm.listQuizReportDetail.reportSummary.unitTitle}}
+				</div>
+			</div>
+			<div class="col-md-12">
+				<div class="col-md-12">
+					<label class="control-label fw600">Lesson name:&nbsp;</label>
+					{{$vm.listQuizReportDetail.reportSummary.lessonTitle}}
+				</div>
+			</div>
+			<div class="col-md-12">
+				<div class="col-md-12">
+					<label class="control-label fw600">Activity name:&nbsp;</label>
+					{{$vm.listQuizReportDetail.reportSummary.activityName}}
+				</div>
+			</div>
+			<div class="col-lg-3 col-md-4 mt10">
+				<table class="table table-striped table-bordered">
+					<thead>
+						<tr>
+							<th colspan="2" style="text-align: left !important;">Summary:</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Number of question</td>
+							<td class="text-right">{{$vm.listQuizReportDetail.reportSummary.numberOfQuestion}}</td>
+						</tr>
+						<tr>
+							<td>Average right answer</td>
+							<td class="text-right">{{$vm.listQuizReportDetail.reportSummary.avarageRightAnswer}}</td>
+						</tr>
+						<tr>
+							<td>Counted submissions</td>
+							<td class="text-right">{{$vm.listQuizReportDetail.reportSummary.totalStudentDone}}</td>
+						</tr>
+						<tr>
+							<td>Number of Low Scoring Questions</td>
+							<td class="text-right">{{$vm.listQuizReportDetail.reportSummary.totalLowQuestion}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</form>
+	<div class="form-group ph10">
+		<button class="btn btn-sm btn-info" ng-class="{'active': $vm.QuizReportDetailView == 1}" ng-click="$vm.QuizReportDetailView = 1">
+			<i class="fa fa-th fa-fw"></i>View 1
+		</button>
+		<button class="btn btn-sm btn-info" ng-class="{'active': $vm.QuizReportDetailView == 2}" ng-click="$vm.QuizReportDetailView = 2">
+			<i class="fa fa-th fa-fw"></i>View 2
+		</button>
+	</div>
+	<div class="lg-table-responsive">
+		<table class="table table-bordered" ng-if="$vm.QuizReportDetailView == 1">
+			<thead>
+				<tr>
+					<th class="w150">Submission Time</th>
+					<th class="w150">Trainee Name</th>
+					<th class="w100">Total Right Answer</th>
+					<th class="w150">Percent</th>
+					<th class="w200 v-align-top text-justify" ng-repeat="question in $vm.listQuizReportDetail.listQuestion">
+						{{$index + 1}}. {{question.questionTitle}}
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td colspan="4" class="bg-light"></td>
+					<td ng-repeat="question in $vm.listQuizReportDetail.listQuestion">
+						<p class="mbn" ng-bind-html="question.rightAnswer | splitRightAnswer">
+						</p>
+					</td>
+				</tr>
+				<tr ng-repeat="student in $vm.listQuizReportDetail.listStudent">
+					<td class="text-center">{{student.submissionTime | dateTimeVN}}</td>
+					<td ng-class="{'text-danger': (student.totalAnswerRight / $vm.listQuizReportDetail.reportSummary.numberOfQuestion) < 0.6 }">{{student.studentName}}</td>
+					<td class="text-right" ng-class="{'text-danger': (student.totalAnswerRight / $vm.listQuizReportDetail.reportSummary.numberOfQuestion) < 0.6 }">
+						{{student.totalAnswerRight}}
+					</td>
+					<td class="text-right" ng-class="{'text-danger': (student.totalAnswerRight / $vm.listQuizReportDetail.reportSummary.numberOfQuestion) < 0.6 }">
+						{{$vm.calculateStudentRightPercent(student.totalAnswerRight)}}%
+					</td>
+					<td class="text-right" ng-repeat="studentDetail in $vm.getQuizReportStudentDetail(student.userId)">
+						{{studentDetail.isTraineeAnswerRight ? '1' : '0'}}
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" class="bg-light"></td>
+					<td class="text-right" ng-repeat="question in $vm.listQuizReportDetail.listQuestion"
+						ng-class="{'text-danger': $vm.calculateQuestionPercent(question.questionId) < 60}">
+						{{$vm.calculateQuestionPercent(question.questionId)}}%
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<table class="table table-bordered" ng-if="$vm.QuizReportDetailView == 2">
+			<thead>
+				<tr>
+					<th class="w300">Question</th>
+					<th class="w100">
+						Question Percent
+					</th>
+					<th class="w150" ng-repeat="student in $vm.listQuizReportDetail.listStudent">
+						{{student.studentName}}
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td colspan="2" class="text-right">Submission Time</td>
+					<td class="text-center" ng-repeat="student in $vm.listQuizReportDetail.listStudent">
+						{{student.submissionTime | dateTimeVN}}
+					</td>
+				</tr>
+				<tr ng-repeat="question in $vm.listQuizReportDetail.listQuestion">
+					<td>
+						<strong>Question: </strong> {{question.questionTitle}} <br/>
+						<strong>Right Answer: </strong>
+						<p class="mbn" ng-bind-html="question.rightAnswer | splitRightAnswer">
+						</p>
+					</td>
+					<td class="text-right" ng-class="{'text-danger': $vm.calculateQuestionPercent(question.questionId) < 60}">
+						{{$vm.calculateQuestionPercent(question.questionId)}}%
+					</td>
+					<td class="text-right" ng-repeat="student in $vm.listQuizReportDetail.listStudent">
+						{{$vm.getTraineeAnswerRightByAnswer(student.userId, question.questionId)}}
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" class="bg-light"></td>
+					<td class="text-right" ng-repeat="student in $vm.listQuizReportDetail.listStudent">
+						{{student.totalAnswerRight}}/{{$vm.listQuizReportDetail.reportSummary.numberOfQuestion}}
+						<strong ng-class="(student.totalAnswerRight / $vm.listQuizReportDetail.reportSummary.numberOfQuestion) < 0.6 ? 'text-danger': 'text-success'">
+							({{$vm.calculateStudentRightPercent(student.totalAnswerRight)}}%)
+						</strong>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="p20 text-center fs20" ng-if="!$vm.listQuizReportDetail">
+	<p>Choose quiz from Quiz Report tab to view detail</p>
+</div>

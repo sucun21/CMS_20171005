@@ -1,0 +1,251 @@
+
+<div class="modal fade modal-confirm-cont in" aria-hidden="false" style="display: block;">
+	<form class="form-horizontal" ng-submit="$vm.addNewGroupClass()" name="$vm.addNewGroupClassForm" novalidate accessible-form>
+	<div class="modal-dialog full-screen-popup has-modal-footer">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" ng-click="closePopup()">
+					<i class="fa fa-times"></i>
+				</button>
+				<h3 class="modal-title text-center">Add new group class</h3>
+			</div>
+			<div class="panel mbn">
+		<div class="admin-form theme-primary">
+
+		<div id="p1" class="panel mn">
+			<div class="panel-body p10 col-lg-8 col-lg-offset-2">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group mb10">
+	                    	<div class="col-lg-12">
+	                    		<label class="field prepend-icon">
+		                    		<input type="text" name="groupClassName" class="form-control" placeholder="Group name" ng-model="$vm.newGroupClassInfo.groupClassName" required
+		                    			ng-maxlength="250"
+			                        	ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.groupClassName.$invalid && $vm.isSubmitAttempt }"/>
+		                    		<label for="groupClassName" class="field-icon"><i class="fa fa-font"></i></label>
+		                       	</label>
+		                       	<span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.groupClassName.$invalid && $vm.isSubmitAttempt">
+					             	<span for="groupClassName" ng-if="$vm.addNewGroupClassForm.groupClassName.$error.required">Group name can't be blank</span>
+					             	<span for="groupClassName" ng-if="$vm.addNewGroupClassForm.groupClassName.$error.maxlength">Group name is too long (max: 250 characters)</span>
+					             </span>
+	                       	</div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                    	<div class="col-lg-12">
+	                    		<label class="field prepend-icon">
+		                    		<input type="text" name="limitUser" class="form-control" placeholder="Max capacity" numbers-only
+		                    			ng-model="$vm.newGroupClassInfo.limitUser" ng-range="1,1000" required
+			                        	ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.limitUser.$invalid && $vm.isSubmitAttempt }"/>
+		                    		<label for="limitUser" class="field-icon"><i class="fa fa-sort-numeric-asc"></i></label>
+		                       	</label>
+		                       	<span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.limitUser.$invalid && $vm.isSubmitAttempt">
+		                       		<span for="limitUser" ng-if="$vm.addNewGroupClassForm.limitUser.$error.required">Max capacity can't be blank</span>
+					             	<span for="limitUser" ng-if="$vm.addNewGroupClassForm.limitUser.$error.range">Max capacity must be between 1 and 1000</span>
+					             	<span for="limitUser" ng-if="$vm.addNewGroupClassForm.limitUser.$error.number">Max capacity must be number</span>
+					             </span>
+	                       	</div>
+	                    </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group mb10">
+	                        <div class="col-lg-12">
+	                        	<ui-select ng-model="$vm.newGroupClassInfo.courseId" theme="select2" search-enabled="$vm.listCourse.length > minSearchItem"
+	                        		on-select="$vm.onSelectCourseOrClassType()"
+	                        		ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.course.$invalid && $vm.isSubmitAttempt }">
+						            <ui-select-match placeholder="Choose course">{{$select.selected.courseTitle}}</ui-select-match>
+		       					    <ui-select-choices repeat="c.courseId.toString() as c in $vm.listCourse | filter: $select.search">
+						              <div ng-bind-html="c.courseTitle"></div>
+						            </ui-select-choices>
+						          </ui-select>
+	                             <input type="hidden" name="course" required ng-model="$vm.newGroupClassInfo.courseId" />
+	                             <span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.course.$invalid && $vm.isSubmitAttempt">
+					             	<span for="course" ng-if="$vm.addNewGroupClassForm.course.$error.required">Choose course</span>
+					             </span>
+	                        </div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                    	<div class="col-lg-12">
+	                    		<ui-select ng-model="$vm.newGroupClassInfo.classTypeId" theme="select2" search-enabled="$vm.listClassType.length > minSearchItem"
+	                    			on-select="$vm.onSelectCourseOrClassType()"
+	                        		ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.classType.$invalid && $vm.isSubmitAttempt }">
+						            <ui-select-match placeholder="Choose class type">{{$select.selected.classTypeName}}</ui-select-match>
+		       					    <ui-select-choices repeat="type.classTypeId.toString() as type in $vm.listClassType | filter: $select.search">
+						              <div ng-bind-html="type.classTypeName"></div>
+						            </ui-select-choices>
+						          </ui-select>
+	                            <input type="hidden" name="classType" required ng-model="$vm.newGroupClassInfo.classTypeId" />
+	                            <span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.classType.$invalid && $vm.isSubmitAttempt">
+					             	<span for="classType" ng-if="$vm.addNewGroupClassForm.classType.$error.required">Choose class type</span>
+					             </span>
+	                       	</div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                        <div class="col-lg-12">
+	                        	<ui-select ng-model="$vm.newGroupClassInfo.unitStartId" theme="select2" search-enabled="$vm.listCourseUnit.length > minSearchItem"
+	                        		on-select="$vm.getListClassDate()"
+	                        		ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.startUnit.$invalid && $vm.isSubmitAttempt }">
+						            <ui-select-match placeholder="Choose start unit">{{$select.selected.unitTitle}}</ui-select-match>
+		       					    <ui-select-choices repeat="unit.unitId.toString() as unit in $vm.listCourseUnit | filter: $select.search">
+						              <div ng-bind-html="unit.unitTitle"></div>
+						            </ui-select-choices>
+						          </ui-select>
+	                             <input type="hidden" name="startUnit" required ng-model="$vm.newGroupClassInfo.unitStartId" />
+	                             <span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.startUnit.$invalid && $vm.isSubmitAttempt">
+					             	<span for="startUnit" ng-if="$vm.addNewGroupClassForm.startUnit.$error.required">Choose start unit</span>
+					             </span>
+	                        </div>
+	                    </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group mb10">
+	                        <div class="col-lg-12">
+	                        	<ui-select ng-model="$vm.newGroupClassInfo.centerId" theme="select2" search-enabled="$vm.listCenter.length > minSearchItem"
+	                        		ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.center.$invalid && $vm.isSubmitAttempt }">
+						            <ui-select-match placeholder="Choose center">{{$select.selected.centerName}}</ui-select-match>
+		       					    <ui-select-choices repeat="c.centerId.toString() as c in $vm.listCenter | filter: $select.search">
+						              <div ng-bind-html="c.centerName"></div>
+						            </ui-select-choices>
+						          </ui-select>
+	                            <input type="hidden" name="center" required ng-model="$vm.newGroupClassInfo.centerId" />
+	                            <span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.center.$invalid && $vm.isSubmitAttempt">
+					             	<span for="center" ng-if="$vm.addNewGroupClassForm.center.$error.required">Choose center</span>
+					             </span>
+	                        </div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                        <div class="col-lg-12">
+	                        	<ui-select ng-model="$vm.newGroupClassInfo.trainerId" theme="select2" search-enabled="$vm.listTrainer.length > minSearchItem"
+	                        		ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.trainer.$invalid && $vm.isSubmitAttempt }">
+						            <ui-select-match placeholder="By teacher">{{$select.selected.fullName}}</ui-select-match>
+		       					    <ui-select-choices repeat="trainer.userId.toString() as trainer in $vm.listTrainer | filter: $select.search">
+						              <div ng-bind-html="trainer.fullName"></div>
+						            </ui-select-choices>
+						          </ui-select>
+	                             <input type="hidden" name="trainer" required ng-model="$vm.newGroupClassInfo.trainerId" />
+	                             <span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.trainer.$invalid && $vm.isSubmitAttempt">
+					             	<span for="trainer" ng-if="$vm.addNewGroupClassForm.trainer.$error.required">Choose teacher</span>
+					             </span>
+	                        </div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                        <div class="col-lg-12">
+	                      		<select class="form-control select2"
+	                        		ng-model="$vm.newGroupClassInfo.facilitatorId"
+	                        		ng-options="f.userId as f.fullName for f in $vm.listFacilitator">
+	                        		<option value>With facilitator</option>
+	                        	</select>
+<!-- 	                             <dropdown placeholder="With facilitator" list="$vm.listFacilitator" selected="$vm.newGroupClassInfo.facilitatorId" value="userId" text="fullName"></dropdown> -->
+	                        </div>
+	                    </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group mb10">
+	                        <div class="col-lg-12">
+	                        	<ui-select ng-model="$vm.newGroupClassInfo.startDayInWeek" theme="select2" search-enabled="true" on-select="$vm.onSelectClassDay()"
+	                        		ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.startDayInWeek.$invalid && $vm.isSubmitAttempt }">
+						            <ui-select-match placeholder="Class on">{{$select.selected.name}}</ui-select-match>
+		       					    <ui-select-choices repeat="wd.value.toString() as wd in $vm.listWeekDay | filter: $select.search">
+						              <div ng-bind-html="wd.name"></div>
+						            </ui-select-choices>
+						          </ui-select>
+	                             <input type="hidden" name="startDayInWeek" required ng-model="$vm.newGroupClassInfo.startDayInWeek" />
+	                             <span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.startDayInWeek.$invalid && $vm.isSubmitAttempt">
+					             	<span for="startDayInWeek" ng-if="$vm.addNewGroupClassForm.startDayInWeek.$error.required">Choose class on day</span>
+					             </span>
+	                        </div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                    	<div class="col-lg-12">
+	                    		<datepicker placeholder="Start Date" date-format="DD-MM-YYYY" date-min="{{currentDate}}" days-of-week-disabled="$vm.daysOfWeekDisabled"
+	                    			on-select="$vm.onSelectStartDate(weekDay)" ng-model="$vm.newGroupClassInfo.startDate" output-format="YYYY-MM-DD"
+	                    			ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.startDate.$invalid && $vm.isSubmitAttempt }"></datepicker>
+								<input type="hidden" ng-model="$vm.newGroupClassInfo.startDate" required name="startDate" />
+		                       	<span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.startDate.$invalid && $vm.isSubmitAttempt">
+					             	<span for="startDate" ng-if="$vm.addNewGroupClassForm.startDate.$error.required">Choose start date</span>
+					             </span>
+	                       	</div>
+	                    </div>
+					</div>
+					<div class="col-md-4 pln">
+						<div class="form-group mb10">
+	                    	<div class="col-lg-12">
+	                    		<timepicker placeholder="Start time" minute-stepping="15" ng-model="$vm.newGroupClassInfo.startTime" output-format="timestamp"
+	                    			ng-class="{ 'input-validation-error' : $vm.addNewGroupClassForm.startTime.$invalid && $vm.isSubmitAttempt }"></timepicker>
+								<input type="hidden" ng-model="$vm.newGroupClassInfo.startTime" required name="startTime" />
+		                       	<span class="field-validation-error" ng-if="$vm.addNewGroupClassForm.startTime.$invalid && $vm.isSubmitAttempt">
+					             	<span for="startTime" ng-if="$vm.addNewGroupClassForm.startTime.$error.required">Choose class time</span>
+					             </span>
+	                       	</div>
+	                    </div>
+					</div>
+				</div>
+				<div class="row">
+					
+				</div>
+			</div>
+			<div class="lg-table-responsive mn">
+				<table class="table table-bordered" ng-if="$vm.listClassDate && $vm.listClassDate.length > 0">
+					<thead>
+						<tr>
+							<th ng-repeat="classDate in $vm.listClassDate" ng-class="{'bg-danger-important': classDate.isHoliday}">
+								{{classDate.unitTitle == '' ? 'Holiday' : classDate.unitTitle}}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+<!-- 							<td class="text-center" ng-repeat="unit in $vm.listCourseUnit"> -->
+<!-- 								{{$vm.getStudyDate($index)}}<br/> -->
+<!-- 								{{$vm.getStudyTime()}} -->
+<!-- 							</td> -->
+							<td class="text-center" ng-repeat="classDate in $vm.listClassDate" ng-class="{'bg-danger-important text-white': classDate.isHoliday}">
+								{{classDate.date}}<br/>
+								{{$vm.getStudyTime()}}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table class="table table-bordered" ng-if="!$vm.listClassDate || $vm.listClassDate.length == 0">
+					<thead>
+						<tr>
+							<th>Preview generate classes</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="text-center">Input data to preview generate classes</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	</div>
+			<div class="modal-footer text-center">
+				<button type="submit" class="btn btn-sm btn-success">Save</button>
+				<button type="button" class="btn btn-sm btn-default" ng-click="closePopup()">Close</button>
+			</div>
+		</div>
+	</div>
+	</form>
+</div>
+<div class="modal-backdrop fade in"></div>
+

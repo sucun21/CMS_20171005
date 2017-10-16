@@ -1,0 +1,19 @@
+{
+    "bundles": [
+        {
+            "type": "js",
+            "name": "libs.min.js",
+            "files": [
+                "libs/jquery-3.2.0.min.js",
+                "libs/linq.js",
+                "libs/angular.min.js",
+                "libs/angular-sanitize.js",
+                "libs/moment.min.js",
+                "libs/preview/jquery.mCustomScrollbar.concat.min.js",
+                "libs/preview/material.min.js",
+                "libs/preview/dialog-polyfill.js",
+                "libs/preview/html5shiv.js"
+            ]
+        }
+    ]
+}

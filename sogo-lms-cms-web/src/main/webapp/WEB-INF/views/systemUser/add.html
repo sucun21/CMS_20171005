@@ -1,0 +1,180 @@
+
+<div class="modal fade modal-confirm-cont in" aria-hidden="false" style="display: block;">
+	<form id="form-ui" ng-submit="$ctrl.addNewUser()" name="$ctrl.addNewUserForm" novalidate accessible-form>
+	<div class="modal-dialog" style="width:750px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" ng-click="closePopup()">
+					<i class="fa fa-times"></i>
+				</button>
+				<h3 class="modal-title text-center">Add new user</h3>
+			</div>
+			<div class="panel mbn">
+		<div class="admin-form theme-primary">
+
+		<div id="p1" class="panel mn">
+			<div class="panel-body bg-light p10">
+
+					<!-- Basic Inputs -->
+					<div class="row">
+						<div class="col-md-12">
+						
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field"> 
+											<select class="form-control select2" ng-model="$ctrl.UserInfo.userTypeId"
+											name="userTypeId"
+			                                required
+			                                ng-options="ut.userTypeId.toString() as ut.userTypeName for ut in $ctrl.listUserType"
+			                                ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.userTypeId.$invalid && $ctrl.addNewUserForm.userTypeId.$dirty }">
+													<option value>User type</option>
+													<option value="1">Male</option>
+													<option value="2">Female</option>
+											</select>
+										</label>
+										<span class="field-validation-error" ng-if="$ctrl.addNewUserForm.userTypeId.$error.required && $ctrl.addNewUserForm.userTypeId.$dirty">
+				                            <span for="userTypeId">Choose user type</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="firstName" class="gui-input" placeholder="First Name"
+                                                 ng-model="$ctrl.UserInfo.firstName" required
+                                                 ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.firstName.$invalid && $ctrl.addNewUserForm.firstName.$dirty }" />
+                                                <label for="firstName" class="field-icon"><i class="fa fa-font"></i>
+                                                </label>
+                                            </label>
+                                            <span class="field-validation-error" ng-if="$ctrl.addNewUserForm.firstName.$invalid && $ctrl.addNewUserForm.firstName.$dirty">
+				                            <span for="firstName" ng-if="$ctrl.addNewUserForm.firstName.$error.required">First name can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="lastName" class="gui-input" placeholder="Last Name"
+                                                	ng-model="$ctrl.UserInfo.lastName" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.firstName.$invalid && $ctrl.addNewUserForm.lastName.$dirty }" />
+                                                <label for="lastName" class="field-icon"><i class="fa fa-font"></i>
+                                                </label>
+                                            </label>
+                                            <span class="field-validation-error" ng-if="$ctrl.addNewUserForm.lastName.$invalid && $ctrl.addNewUserForm.lastName.$dirty">
+				                            <span for="lastName" ng-if="$ctrl.addNewUserForm.lastName.$error.required">Last name can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="userEmail" class="gui-input" placeholder="Email"
+                                                	ng-model="$ctrl.UserInfo.userEmail" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.userEmail.$invalid && $ctrl.addNewUserForm.userEmail.$dirty }" />
+                                                <label for="userEmail" class="field-icon">
+                                                	<i class="fa fa-envelope"></i>
+                                                </label>
+                                            </label>
+                                            <span class="field-validation-error" ng-if="$ctrl.addNewUserForm.userEmail.$invalid && $ctrl.addNewUserForm.userEmail.$dirty">
+				                            <span for="userEmail" ng-if="$ctrl.addNewUserForm.userEmail.$error.required">Email can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="userPhone" class="gui-input" placeholder="Phone"
+                                                ng-model="$ctrl.UserInfo.userPhone" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.userPhone.$invalid && $ctrl.addNewUserForm.userPhone.$dirty }"/>
+                                                <label for="userPhone" class="field-icon"><i class="fa fa-phone"></i>
+                                                </label>
+                                            </label>
+                                             <span class="field-validation-error" ng-if="$ctrl.addNewUserForm.userPhone.$invalid && $ctrl.addNewUserForm.userPhone.$dirty">
+				                            <span for="userPhone" ng-if="$ctrl.addNewUserForm.userPhone.$error.required">Phone can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<label class="field prepend-icon">
+                                            <input type="password" name="password" class="gui-input" placeholder="Password"
+                                            	ng-model="$ctrl.UserInfo.password" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.password.$invalid && $ctrl.addNewUserForm.password.$dirty }">
+                                            <label for="password" class="field-icon"><i class="fa fa-key"></i>
+                                            </label>
+                                        </label>
+                                        <span class="field-validation-error" ng-if="$ctrl.addNewUserForm.password.$invalid && $ctrl.addNewUserForm.password.$dirty">
+				                            <span for="password" ng-if="$ctrl.addNewUserForm.password.$error.required">Password can't be blank</span>
+				                        </span>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                            <input type="password" name="confirmPassword" class="gui-input" placeholder="Confirm Password" 
+                                            		ng-model="$ctrl.UserInfo.confirmPassword" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewUserForm.confirmPassword.$invalid && $ctrl.addNewUserForm.confirmPassword.$dirty }"
+                                                	password-verify="$ctrl.UserInfo.password" />
+                                            <label for="confirmPassword" class="field-icon"><i class="fa fa-key"></i>
+                                            </label>
+                                        </label>
+                                        <span class="field-validation-error" ng-if="$ctrl.addNewUserForm.confirmPassword.$invalid && $ctrl.addNewUserForm.confirmPassword.$dirty">
+				                            <span for="confirmPassword" ng-if="$ctrl.addNewUserForm.confirmPassword.$error.required">Confirm password can't be blank</span>
+				                            <span for="confirmPassword" ng-if="$ctrl.addNewUserForm.confirmPassword.$error.passwordVerify">Password and Confirm password not match</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="dateOfBirth" class="gui-input datepicker" id="dtDOB" placeholder="Date of birth"
+                                                	ng-model="$ctrl.UserInfo.dob"
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.dateOfBirth.$invalid && $ctrl.addNewStudentForm.dateOfBirth.$dirty }"
+                                                 />
+                                                <label for="dateOfBirth" class="field-icon">
+                                                	<i class="fa fa-calendar"></i>
+                                                </label>
+                                            </label>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field"> 
+											<select class="form-control select2" ng-model="$ctrl.UserInfo.gender" name="gender"
+			                                ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.gender.$invalid && $ctrl.addNewStudentForm.gender.$dirty }">
+													<option value>Gender</option>
+													<option value="1">Male</option>
+													<option value="2">Female</option>
+											</select>
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+			</div>
+<!-- 			<div class="panel-footer text-right"> -->
+<!-- 				<button type="submit" class="btn btn-success">Save</button> -->
+<!-- 				<button type="button" class="btn btn-danger">Cancel</button> -->
+<!-- 			</div> -->
+			
+		</div>
+	</div>
+	</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-sm btn-success">Save</button>
+				<button type="button" class="btn btn-sm btn-default" ng-click="closePopup()">Close</button>
+			</div>
+		</div>
+	</div>
+	</form>
+</div>
+<div class="modal-backdrop fade in"></div>
+

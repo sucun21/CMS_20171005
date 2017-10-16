@@ -1,0 +1,50 @@
+[
+	{
+		"groupName": "Class Schedule",
+		"icon": "fa fa-calendar",
+		"states": [
+			{
+				"name": "root.schedule",
+				"isShowMenu": true,
+				"menuName": "Class Schedule"
+			},
+			{
+				"name": "root.schedule.classInfo",
+				"isShowMenu": false,
+				"menuName": ""
+			}
+		]
+	},
+	{
+		"groupName": "Student",
+		"icon": "fa fa-graduation-cap",
+		"states": [
+			{
+				"name": "root.student.list",
+				"isShowMenu": true,
+				"menuName": "Manage Student"
+			},
+			{
+				"name": "root.student.list.details",
+				"isShowMenu": false,
+				"menuName": ""
+			},
+			{
+				"name": "root.student.list.add",
+				"isShowMenu": false,
+				"menuName": ""
+			}
+		]
+	},
+	{
+		"groupName": "Catalouge",
+		"icon": "fa fa-search",
+		"states": [
+			{
+				"name": "root.catalouge",
+				"isShowMenu": true,
+				"menuName": "Catalouge"
+			}
+		]
+	}
+]

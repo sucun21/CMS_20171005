@@ -1,0 +1,92 @@
+<div class="modal fade modal-confirm-cont in" aria-hidden="false" style="display: block;">
+	<div class="modal-dialog full-screen-popup">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" ng-click="closePopup()">
+					<i class="fa fa-times"></i>
+				</button>
+				<h3 class="modal-title text-center">Class Information</h3>
+			</div>
+			<div class="panel">
+				<div class="panel-body">
+					<div class="col-md-3">
+						<div class="panel">
+							<div class="panel-body">
+								<h3 class="student-name">{{$vm.classInfo.unitTitle}}</h3>
+							</div>
+						</div>
+						<div class="panel">
+							<div class="panel-heading panel-heading-sm bg-system prn b0">
+							    <span class="panel-title text-uppercase">Class info</span>
+							</div>
+							<div class="panel-body">
+								<form class="form-horizontal form-text-only">
+									<div class="form-group">
+							            <label class="col-md-12">Trainer</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$vm.classInfo.teacherName}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Course</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$vm.classInfo.courseTitle}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Class type</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$vm.classInfo.classTypeName}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Class date</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$vm.classInfo.studyDateTime | dateTimeShortVN}}
+							                </span>
+							            </div>
+							        </div>
+							        <div class="form-group">
+							            <label class="col-md-12">Center</label>
+							            <div class="col-md-12">
+							                <span class="text-muted">
+							                    {{$vm.classInfo.centerName}}
+							                </span>
+							            </div>
+							        </div>
+							    </form>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-9">
+						<div class="panel">
+							<div class="panel-heading">
+								<ul class="nav panel-tabs-border panel-tabs panel-tabs-left">
+									<li ui-sref="root.schedule.classInfo({ view: 'student' })" ui-sref-active="active"><a href="javascript:void(0);">Attendant List</a></li>
+									<li ui-sref="root.schedule.classInfo({ view: 'report' })" ui-sref-active="active"><a href="javascript:void(0);">Quiz Report</a></li>
+									<li ui-sref="root.schedule.classInfo({ view: 'report-detail' })" ui-sref-active="active"><a href="javascript:void(0);">Quiz Report Detail</a></li>
+								</ul>
+							</div>
+							<div class="panel-body">
+								<div class="show" ng-include="$vm.getViewTemplate()"></div>
+<!-- 								<div class="hide" ng-include="'/app/classSchedule/views/_quizReport.html'" ng-class="{'show': $vm.currentTab == 2}"></div> -->
+<!-- 								<div class="hide" ng-include="'/app/classSchedule/views/_quizReportDetail.html'" ng-class="{'show': $vm.currentTab == 3}" ng-if="$vm.listQuizReportDetail"></div> -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+<!-- 			<div class="modal-footer"> -->
+<!-- 				<button type="button" class="btn btn-sm btn-default" ng-click="closePopup()">Close</button> -->
+<!-- 			</div> -->
+		</div>
+	</div>
+</div>
+<div class="modal-backdrop fade in"></div>

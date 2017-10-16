@@ -1,0 +1,67 @@
+<form class="form-horizontal form-text-only property-item cursor" ng-repeat="quiz in vm.listStudentQuiz"
+	ng-class="{'mt10': $index > 0}" ng-click="vm.showQuizDetail(quiz)">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="col-md-12">
+				<label class="control-label fw600">Quiz {{$index + 1}}:</label>
+				{{quiz.activityName}}
+			</div>
+		</div>
+	</div>
+	<div class="row" ng-class="{'border-bot-solid-1 pb10': quiz.isShowDetail}">
+<!-- 		<div class="col-md-4"> -->
+<!-- 			<div class="col-md-12"> -->
+<!-- 				<label class="control-label fw600">Start time:</label> -->
+<!-- 			</div> -->
+<!-- 			<div class="col-md-12">{{quiz.startTime | dateTimeVN}}</div> -->
+<!-- 		</div> -->
+<!-- 		<div class="col-md-4"> -->
+<!-- 			<div class="col-md-12"> -->
+<!-- 				<label class="control-label fw600">End time:</label> -->
+<!-- 			</div> -->
+<!-- 			<div class="col-md-12">{{quiz.endTime | dateTimeVN}}</div> -->
+<!-- 		</div> -->
+		<div class="col-md-4">
+			<div class="col-md-12" ng-class="{'text-danger': vm.getTotalWrongAnswer(quiz.listQuizDetail) / vm.getTotalQuestion(quiz.listQuizDetail) >= 0.4 }">
+				<label class="control-label fw600">Wrong answer:</label>
+				{{vm.getTotalWrongAnswer(quiz.listQuizDetail)}}/{{vm.getTotalQuestion(quiz.listQuizDetail)}}
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Right answer:</label>
+				{{vm.getTotalRightAnswer(quiz.listQuizDetail)}}/{{vm.getTotalQuestion(quiz.listQuizDetail)}}
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Time spend:</label>
+				{{quiz.timeSpend | unitTimeSpend}}
+			</div>
+		</div>
+	</div>
+	<div class="row" ng-repeat="question in quiz.listQuizDetail" ng-if="quiz.isShowDetail">
+		<div class="col-md-12">
+			<div class="col-md-12">
+				<label class="control-label fw600">Question {{$index + 1}}: </label>
+				{{question.questionTitle}}
+			</div>
+			<div class="col-md-12" ng-class="{'text-danger': !question.isTraineeAnswerRight}">
+				<label class="control-label fw600">Answer: </label>
+				{{question.questionTypeId == 5 ? 'Free text' : (question.isTraineeAnswerRight ? 'Correct' : 'Incorrect')}}
+			</div>
+		</div>
+	</div>
+<!-- 	<div class="row"> -->
+<!-- 		<div class="col-md-12"> -->
+<!-- 			<div class="col-md-12"> -->
+<!-- 				<label class="control-label fw600">Answer:</label> -->
+<!-- 			</div> -->
+<!-- 			<div class="col-md-12">{{property.traineeAnswer}}</div> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
+</form>
+<p class="mn" ng-if="(vm.listStudentQuiz == null || vm.listStudentQuiz.length == 0) && !IsShowLoading()">No quiz activity found!</p>
+<p class="mn" ng-if="IsShowLoading()">
+	Loading...
+</p>

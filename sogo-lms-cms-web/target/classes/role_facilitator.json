@@ -1,0 +1,18 @@
+[
+	{
+		"groupName": "Class Schedule",
+		"icon": "fa fa-calendar",
+		"states": [
+			{
+				"name": "root.schedule",
+				"isShowMenu": true,
+				"menuName": "Class Schedule"
+			},
+			{
+				"name": "root.schedule.classInfo",
+				"isShowMenu": false,
+				"menuName": ""
+			}
+		]
+	}
+]

@@ -1,0 +1,253 @@
+<div class="modal fade modal-confirm-cont in" aria-hidden="false" style="display: block;">
+	<div class="modal-dialog full-screen-popup">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" ng-click="closePopup()">
+					<i class="fa fa-times"></i>
+				</button>
+				<h3 class="modal-title text-center">Student Information</h3>
+			</div>
+			<div class="panel mbn">
+		<div class="panel-body">
+			<div class="col-md-3">
+				<div class="panel">
+					<div class="panel-body">
+						<img class="student-avatar" ng-attr-src="{{generateAvatarUrl($vm.studentInfo.avatarUrl)}}" width="61" on-error-src/>
+						<h3 class="student-name">{{$vm.studentInfo.fullName}}</h3>
+					</div>
+				</div>
+				<div class="panel">
+					<div class="panel-heading panel-heading-sm bg-system prn b0">
+					    <span class="panel-title text-uppercase">About student</span>
+					</div>
+					<div class="panel-body">
+						<form class="form-horizontal form-text-only">
+					        <div class="form-group">
+					            <label class="col-md-12">Email</label>
+					            <div class="col-md-12">
+					                <span class="text-muted">
+					                    {{$vm.studentInfo.userEmail}}
+					                </span>
+					            </div>
+					        </div>
+					        <div class="form-group">
+					            <label class="col-md-12">Phone</label>
+					            <div class="col-md-12">
+					                <span class="text-muted">
+					                    {{$vm.studentInfo.userPhone}}
+					                </span>
+					            </div>
+					        </div>
+					        <div class="form-group">
+					            <label class="col-md-12">Password</label>
+					            <div class="col-md-12">
+					            	<button type="button" class="btn btn-sm btn-success" ng-click="$vm.resetPassword()">
+					            		Reset
+					            	</button>
+					            </div>
+					        </div>
+					        <div class="form-group">
+					            <label class="col-md-12">Date of birth</label>
+					            <div class="col-md-12">
+					                <span class="text-muted">
+					                    {{$vm.studentInfo.dateOfBirth | dateVN}}
+					                </span>
+					            </div>
+					        </div>
+					        <div class="form-group">
+					            <label class="col-md-12">Student status</label>
+					            <div class="col-md-12">
+					                <span class="fw600" ng-class="$vm.studentInfo.isActive ? 'text-success': 'text-danger'">
+					                    {{$vm.studentInfo.isActive ? 'Active' : 'Deactive'}}
+					                </span>
+					            </div>
+					        </div>
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Type</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					                <span class="text-muted"> -->
+<!-- 					                    {{$vm.studentInfo.type}} -->
+<!-- 					                </span> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+					    </form>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-9">
+				<div class="panel">
+				   	<div class="panel mb10">
+						<div class="row">
+							<div class="col-md-3">
+								<ui-select ng-model="$vm.courseTraineeId" theme="select2" search-enabled="$vm.listStudentCourse.length > minSearchItem"
+									on-select="$vm.changeToCourse($select.selected)">
+						            <ui-select-match>{{$select.selected.courseTitle + ' - ' + $select.selected.contractNo}}</ui-select-match>
+					    					    <ui-select-choices repeat="sc.courseTraineeId.toString() as sc in $vm.listStudentCourse | filter: $select.search">
+						              <div>{{sc.courseTitle + ' - ' + sc.contractNo}}</div>
+						            </ui-select-choices>
+						          </ui-select>
+							</div>
+						</div>
+					</div>
+                   <div class="panel-heading">
+                       <ul class="nav panel-tabs-border panel-tabs panel-tabs-left">
+<!--                            <li ng-click="$vm.changeTab(1)" ng-class="{'active': $vm.currentTab == 1}"> -->
+<!--                                <a href="javascript:void(0);">Class info</a> -->
+<!--                            </li> -->
+<!--                            <li ng-click="$vm.changeTab(2)" ng-class="{'active': $vm.currentTab == 2}"> -->
+<!--                                <a href="javascript:void(0);">Log activity</a> -->
+<!--                            </li> -->
+<!--                            <li ng-click="$vm.changeTab(4)" ng-class="{'active': $vm.currentTab == 4}"> -->
+<!--                                <a href="javascript:void(0);">Lab Activity</a> -->
+<!--                            </li> -->
+<!--                            <li ng-click="$vm.changeTab(3)" ng-class="{'active': $vm.currentTab == 3}"> -->
+<!--                                <a href="javascript:void(0);">Contract</a> -->
+<!--                            </li> -->
+							<li ui-sref="root.student.list.detail({ tab: 'class' })" ui-sref-active="active">
+                               <a href="javascript:void(0);">Class info</a>
+                           </li>
+                           <li ui-sref="root.student.list.detail({ tab: 'log-activity' })" ui-sref-active="active">
+                               <a href="javascript:void(0);">Log activity</a>
+                           </li>
+                           <li ui-sref="root.student.list.detail({ tab: 'lab-activity' })" ui-sref-active="active">
+                               <a href="javascript:void(0);">Lab Activity</a>
+                           </li>
+                           <li ui-sref="root.student.list.detail({ tab: 'contract' })" ui-sref-active="active">
+                               <a href="javascript:void(0);">Contract</a>
+                           </li>
+                       </ul>
+                   </div>
+                   <div class="panel-body">
+                       <div class="tab-content pn br-n">
+                           <div ui-view class="tab-pane active">
+                           	
+                           </div>
+<!--                            <div class="tab-pane" ng-include="'/views/student/details/_logActivity.html'" ng-controller="studentLogActivityCtrl" ng-class="{'active': $vm.currentTab == 2}"> -->
+                               
+<!--                            </div> -->
+<!--                            <div class="tab-pane" ng-include="'/views/student/details/_contract.html'" ng-class="{'active': $vm.currentTab == 3}"> -->
+                               
+<!--                            </div> -->
+<!--                            <div class="tab-pane" ng-include="'/views/student/details/_labActivity.html'" ng-class="{'active': $vm.currentTab == 4}"> -->
+                               
+<!--                            </div> -->
+                       </div>
+                   </div>
+               </div>
+			</div>
+		</div>
+	</div>
+		</div>
+	</div>
+</div>
+
+<!-- <header id="topbar"> -->
+<!-- 	<div class="topbar-left"> -->
+<!-- 		<ol class="breadcrumb"> -->
+<!-- 			<li class="crumb-active"><span class="fs22 fw400">Student Info</span></li> -->
+<!-- 		</ol> -->
+<!-- 	</div> -->
+<!-- </header> -->
+<!-- <div class="tray tray-center va-t posr animated fade" ng-class="pageLoaded ? 'fadeIn': 'fade'"> -->
+<!-- 	<div class="panel"> -->
+<!-- 		<div class="panel-body"> -->
+<!-- 			<div class="col-md-3"> -->
+<!-- 				<div class="panel"> -->
+<!-- 					<div class="panel-body"> -->
+<!-- 						<img class="student-avatar" ng-attr-src="{{generateAvatarUrl($vm.studentInfo.avatarUrl)}}" width="61" on-error-src/> -->
+<!-- 						<h3 class="student-name">{{$vm.studentInfo.fullName}}</h3> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+<!-- 				<div class="panel"> -->
+<!-- 					<div class="panel-heading panel-heading-sm bg-system prn b0"> -->
+<!-- 					    <span class="panel-title text-uppercase">About student</span> -->
+<!-- 					</div> -->
+<!-- 					<div class="panel-body"> -->
+<!-- 						<form class="form-horizontal form-text-only"> -->
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Email</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					                <span class="text-muted"> -->
+<!-- 					                    {{$vm.studentInfo.userEmail}} -->
+<!-- 					                </span> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Phone</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					                <span class="text-muted"> -->
+<!-- 					                    {{$vm.studentInfo.userPhone}} -->
+<!-- 					                </span> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Password</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					            	********* -->
+<!-- 					            	<button type="button" class="btn btn-sm btn-success" -->
+<!-- 					            		ng-click="$vm.resetPassword()"> -->
+<!-- 					            		Reset -->
+<!-- 					            	</button> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Date of birth</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					                <span class="text-muted"> -->
+<!-- 					                    {{$vm.studentInfo.dateOfBirth | dateVN}} -->
+<!-- 					                </span> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Student status</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					                <span class="fw600" ng-class="$vm.studentInfo.isActive ? 'text-success': 'text-danger'"> -->
+<!-- 					                    {{$vm.studentInfo.isActive ? 'Active' : 'Deactive'}} -->
+<!-- 					                </span> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+<!-- 					        <div class="form-group"> -->
+<!-- 					            <label class="col-md-12">Type</label> -->
+<!-- 					            <div class="col-md-12"> -->
+<!-- 					                <span class="text-muted"> -->
+<!-- 					                    {{$vm.studentInfo.type}} -->
+<!-- 					                </span> -->
+<!-- 					            </div> -->
+<!-- 					        </div> -->
+<!-- 					    </form> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+<!-- 			</div> -->
+<!-- 			<div class="col-md-9"> -->
+<!-- 				<div class="panel"> -->
+<!--                    <div class="panel-heading"> -->
+<!--                        <ul class="nav panel-tabs-border panel-tabs panel-tabs-left"> -->
+<!--                            <li ng-click="$vm.changeTab(1)" ng-class="{'active': $vm.currentTab == 1}"> -->
+<!--                                <a href="javascript:void(0);">Class info</a> -->
+<!--                            </li> -->
+<!--                            <li ng-click="$vm.changeTab(2)" ng-class="{'active': $vm.currentTab == 2}"> -->
+<!--                                <a href="javascript:void(0);">Log activity</a> -->
+<!--                            </li> -->
+<!--                            <li ng-click="$vm.changeTab(3)" ng-class="{'active': $vm.currentTab == 3}"> -->
+<!--                                <a href="javascript:void(0);">Contract Info</a> -->
+<!--                            </li> -->
+<!--                        </ul> -->
+<!--                    </div> -->
+<!--                    <div class="panel-body"> -->
+<!--                        <div class="tab-content pn br-n"> -->
+<!--                            <div class="tab-pane" ng-include="'/views/student/details/_listClass.html'"  ng-class="{'active': $vm.currentTab == 1}"> -->
+                           	
+<!--                            </div> -->
+<!--                            <div class="tab-pane" ng-include="'/views/student/details/_logActivity.html'" ng-class="{'active': $vm.currentTab == 2}"> -->
+                               
+<!--                            </div> -->
+<!--                            <div class="tab-pane" ng-class="{'active': $vm.currentTab == 3}"> -->
+                               
+<!--                            </div> -->
+<!--                        </div> -->
+<!--                    </div> -->
+<!--                </div> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
+<!-- </div> -->

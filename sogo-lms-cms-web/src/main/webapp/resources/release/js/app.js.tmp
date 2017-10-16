@@ -1,0 +1,4717 @@
+var $stateProviderRef = null;
+var $urlRouterProviderRef = null;
+var $urlRouterRef = null;
+
+var app = angular.module('app', ['ui.router', 'ngSanitize', 'angular-cache', 'ngProgress', 'ui.select', 'oc.lazyLoad']);
+
+
+app.value('genderArray', ['Unknown', 'Male', 'Female']);
+
+/*config*/
+app.config(['$qProvider', function ($qProvider) {
+    $qProvider.errorOnUnhandledRejections(false);
+}]);
+
+app.config(['CacheFactoryProvider', function (CacheFactoryProvider) {
+	
+	var options = {
+		maxAge: 1440 * 60 * 1000, /*expire after 24h*/
+	    deleteOnExpire: 'aggressive', // Items will be deleted from this cache right when they expire.
+	    storagePrefix: 'cms.cache.',
+	    storageMode: 'memory' //cache will clear when refresh
+	  };
+	
+//	if(window.sessionStorage){
+//		options.storageMode = 'sessionStorage';
+//	}
+//	else if(window.localStorage){
+//		options.storageMode = 'localStorage';
+//	}
+	
+	angular.extend(CacheFactoryProvider.defaults, options);
+	//angular.extend(CacheFactoryProvider.defaults, { maxAge: 5000 /*expire after 24h*/ });
+}]);
+
+app.config(['$httpProvider', function ($httpProvider) {
+    // XSRF token naming
+    $httpProvider.defaults.xsrfHeaderName = 'x-dt-csrf-header';
+    $httpProvider.defaults.xsrfCookieName = 'X-CSRF-TOKEN';
+    $httpProvider.defaults.headers.common["X-Requested-With"] = 'XMLHttpRequest';
+    var $http,
+        interceptor = ['$q', '$injector', function ($q, $injector) {
+            return {
+                response: function (res) {
+                    return res;
+                },
+                responseError: function (res) {
+                    // res.data = { ID: -1, Message: 'Xảy ra lỗi hệ thống' };
+                    return res;
+                },
+            };
+        }];
+
+    $httpProvider.interceptors.push(interceptor);
+}]);
+
+app.config(['$ocLazyLoadProvider', function($ocLazyLoadProvider){
+	/*config lazy load script*/
+	$ocLazyLoadProvider.config({
+	  modules: [
+		  {
+		    name: 'login',
+		    files: ['/app/controllers/login.js']
+		  },
+		  {
+			name: 'module.admin',
+			files: ['/app/module.admin.js']
+		  },
+		  {
+			  name: 'home.admin',
+			  files: ['/app/controllers/home.admin.js']  
+		  }
+	  ]
+	});
+}]);
+
+app.run(['$rootScope', '$q', '$state', '$urlRouter', '$timeout', 'sessionService', 'dataService', 'notifyService', 'CacheFactory', 'progressService', '$transitions',
+	function($rootScope, $q, $state, $urlRouter, $timeout, sessionService, dataService, notifyService, CacheFactory, progressService, $transitions){
+	
+	$urlRouterRef = $urlRouter;
+	
+	//check show loading background
+	$rootScope.IsShowLoading = function () {
+        return progressService.status() > 0 && progressService.status() < 100;
+    };
+//	
+//    $script.urlArgs('v=' + appVersion);
+//	$script.path('/app/');
+//	$script.ready(['app.configs.js'], function(){
+//		console.log('ready');
+//	}, function(notFound){
+//		console.log(notFound);
+//	});
+	
+//	$script('app.configs.ad.js', function(){
+//		
+//	});
+	
+	/*global event*/
+	$rootScope.doLogout = function(e){
+    	e.preventDefault();
+    	dataService.doLogout().then(function(){
+    		var refUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    		$state.go('login', { ref: refUrl });
+    	});
+    };
+	
+	//broadcast event click on document
+	angular.element(document).on("click", function(e) {
+		$rootScope.$broadcast("documentClicked", angular.element(e.target));
+	});
+	
+    $rootScope.$on('updateSession', function(){
+    	
+    }); 
+		
+	//init event state change
+	$transitions.onStart({ }, function(trans) {
+		progressService.start();
+	  });
+	
+	$transitions.onSuccess({ }, function(trans) {
+		
+		if(!$('body').hasClass('onload-check'))
+		{
+	    	$timeout(function(){
+	  			common.init();
+	  		}, 1);
+		}
+//		progressService.complete();
+	});
+	
+	$transitions.onError({ }, function(trans) {
+		console.log('error');
+	});
+	
+//	$rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState) {
+//		progressService.start();
+//	});
+//	
+//	$rootScope.$on('$stateChangeSuccess', function(){
+//		$timeout(function(){
+//  			//Core.init();
+//  			common.init();
+//  		}, 1);
+//		progressService.complete();
+//	});
+		
+	$rootScope.pageLoaded = false;
+	$rootScope.appName = 'LMS';
+	$rootScope.SERVER_DATE_FORMAT = "YYYY-MM-DD";
+	$rootScope.FULL_CALENDAR_DATE_TIME_FORMAT = "YYYY-MM-DDTHH:mm:ss";
+	$rootScope.currentYear = new Date().getFullYear();
+	$rootScope.currentDate = moment(new Date()).format('DD/MM/YYYY');
+	$rootScope.defaultPageSize = 10;
+	$rootScope.notifyService = notifyService;
+	$rootScope.sessionUserId = 0;
+	$rootScope.isAdmin = sessionService.isAdmin(); 
+	$rootScope.defaultPassword = '1234567';
+	$rootScope.noAvatarImgUrl = '/images/no-avatar.jpg';
+	$rootScope.isAdmin = sessionService.isAdmin();
+	$rootScope.minSearchItem = 5;
+	
+	$rootScope.listCourseActivity = {};
+	
+	$rootScope.getCourseActivity = function(courseId){
+		if(!$rootScope.listCourseActivity[courseId]){
+			var promise = dataService.getCourseActivity(courseId);
+			promise.then(function(res){
+				$rootScope.listCourseActivity[courseId] = res.data;
+			});
+		};
+	};
+	
+	
+	$rootScope.convertToShortDatetimeVN = function(input){
+    	if (input === '' || !input) {
+            return input;
+        } else {
+            var convertedDate = new Date(input.toString().match(/\d+/)[0] * 1);
+
+            return moment(convertedDate).format('DD/MM/YYYY HH:mm');
+        }
+    };
+	
+	$rootScope.convertToDatetimeVN = function(input){
+    	if (input === '' || !input) {
+            return input;
+        } else {
+            var convertedDate = new Date(input.toString().match(/\d+/)[0] * 1);
+
+            return moment(convertedDate).format('DD/MM/YYYY HH:mm:ss');
+        }
+    };
+    
+    $rootScope.generateAvatarUrl = function(imageName){
+    	
+    	if(imageName && imageName.indexOf("http://") == -1 && imageName.indexOf("https://") == -1)
+    	{
+    		return imageDomain + 'avatar/' + imageName;
+    	}
+    	else{
+    		return imageName;
+    	}
+    };
+    
+    $rootScope.closePopup = function () {
+        $state.transitionTo($state.$current.parent , $state.params, {
+            reload: false,
+            inherit: false,
+            notify: true
+        });
+    };
+    
+    $rootScope.clearCache = function(){
+    	CacheFactory.clearAll();
+    	notifyService.success('Cache cleared');
+    };
+	
+	function getUserSession(){
+		
+		var deferred = $q.defer();
+		
+		var promise = dataService.getUserSession();
+		
+		promise.then(function(res){
+			if(res.is_success){
+				$rootScope.sessionUserId = res.data.userId;
+				sessionService.setUserSession(res.data);
+			}
+			else{
+				sessionService.setUserSession();
+			}
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	$rootScope.getStudentListData = ['dataService', '$stateParams', function(dataService, $stateParams){	
+		var getCourse = dataService.getAllCourse();
+		var getCenter = dataService.getAllCenter();
+		var getStudentList = dataService.getStudentList($stateParams);
+		    	
+		return $q.all([getCourse, getCenter, getStudentList]).then(function(results){	
+            return {
+                listCourse: results[0] ? results[0].data : [],
+				listCenter: results[1] ? results[1].data : [],
+				listData: results[2] ? results[2].data : []
+            };
+        });
+
+	}];
+	
+	$rootScope.getUserListData = ['dataService', '$stateParams', function(dataService, $stateParams){
+		var getUserType = dataService.getUserType();
+		var getSystemUser = dataService.getSystemUser($stateParams);
+		    	
+		return $q.all([getUserType, getSystemUser]).then(function(results){			
+            return {
+                listUserType: results[0] ? results[0].data : [],
+				listData: results[1] ? results[1].data : [],
+            };
+        });
+
+	}];
+	
+	$rootScope.initClassGroupListData = ['dataService', '$stateParams', function(dataService, $stateParams){
+		var getCourse = dataService.getAllCourse();
+		var getCenter = dataService.getAllCenter();
+		var getTrainer = dataService.getAllTrainer();
+		var getClassType = dataService.getAllClassType();
+		var getAllGroupClass = dataService.getAllGroupClass($stateParams);
+		    	
+		return $q.all([getCourse, getCenter, getTrainer, getClassType, getAllGroupClass]).then(function(results){			
+            return {
+				listCourse: results[0] ? results[0].data : [],
+				listCenter: results[1] ? results[1].data : [],
+                listTrainer: results[2] ? results[2].data : [],
+				listClassType: results[3] ? results[3].data : [],
+                listData: results[4] ? results[4].data : []
+            };
+        });
+	}];
+	
+	$rootScope.initAddClassGroupData = ['dataService', function(dataService){
+		var getCourse = dataService.getAllCourse();
+		var getCenter = dataService.getAllCenter();
+		var getTrainer = dataService.getAllTrainer();
+		var getClassType = dataService.getAllClassType();
+		var getCourseHoliday = dataService.getCourseHoliday();
+		
+		return $q.all([getCourse, getCenter, getTrainer, getClassType, getCourseHoliday]).then(function(results){		
+            return {
+				listCourse: results[0] ? results[0].data : [],
+				listCenter: results[1] ? results[1].data : [],
+                listTrainer: results[2] ? results[2].data : [],
+				listClassType: results[3] ? results[3].data : [],
+                listHoliday: results[4] ? results[4].data : []
+            };
+        });
+	}];
+	
+	function getModules(){
+		var deferred = $q.defer();
+		var promise = dataService.getModules(sessionService.getUserSession().userTypeId);
+		
+		promise.then(function(res){
+			angular.forEach(res, function(groupState) {
+				
+				var userMenu = {
+					name: groupState.group,
+					icon: groupState.icon,
+					parentState: groupState.parentState,
+					subMenu: []
+				};
+				
+				angular.forEach(groupState.states, function(value){
+					//push to menu
+					if(value.isShowMenu){
+						userMenu.subMenu.push({
+							name: value.menuName,
+							uiSref: value.name
+						});
+					}
+					
+					
+					//push to state
+					var getExistingState = $state.get(value.name);
+			          if(getExistingState !== null){
+			            return; 
+			          }
+			          
+			          var state = {
+		                  "url": value.url,
+		                  //"parent": value.parent,
+		                  "abstract": value.abstract,
+		                  "template": value.template,
+		                  "templateUrl": value.templateUrl,
+		                  "data": value.data,
+		                  "controller": value.controller,
+		                  "controllerAs": value.controllerAs,
+		                  "views": {},
+		                  "reloadOnSearch": value.reloadOnSearch,
+		                  "params": value.params
+		                };
+			          
+			          if(!angular.isUndefined(value.resolve) && value.resolve != '' && !value.parent) {
+				          state.resolve = {
+			        		  "initData": $rootScope.$eval(value.resolve) 
+				          };
+		        	  }
+			          else if(!angular.isUndefined(value.resolve) && value.resolve != '' && value.parent){
+			        	  state.resolve = {
+			        		  "initDataChild": $rootScope.$eval(value.resolve) 
+				          };
+			          }
+			          else{
+			        	  state.resolve = {
+		        			  "fakeData": function(){ return null; }
+				          };
+			          }
+
+		                angular.forEach(value.views, function(view) {
+		                  state.views[view.name] = {
+		                    templateUrl: view.templateUrl,
+		                    template: view.template,
+		                    data: view.data,
+		                    controller: view.controller,
+			                controllerAs: view.controllerAs
+		                  };
+		                  
+		                });
+		                
+			          $stateProviderRef.state(value.name, state);
+				});	     
+				
+				//push menu to session
+				sessionService.pushUserMenu(userMenu);
+				
+	        });
+	        // Configures $urlRouter's listener *after* your custom listener
+	        $urlRouter.sync();
+	        $urlRouter.listen();
+			
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	$rootScope.hasPermission = function(routeName){
+		return Enumerable.From($rootScope.listState).Count(function(x) { return x.name == routeName; }) > 0;
+	};
+	
+//	$q.when(getUserSession())
+//	  .then(function(){
+//		  $q.when(getModules())
+//		  	.then(function(){
+//		  		$rootScope.listState = $state.get();
+//		  	});
+//	  });
+	
+	
+}]);
+
+//function ngloadStateFactory($q, futureState) {
+//	var ngloadDeferred = $q.defer();
+////	require([ "ngload!" + futureState.src , 'ngload', 'angularAMD'],
+////		function ngloadCallback(result, ngload, angularAMD) {
+////		  angularAMD.processQueue();
+////		  ngloadDeferred.resolve(undefined);
+////		});
+//	return ngloadDeferred.promise;
+//}app.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',
+	function($stateProvider, $urlRouterProvider, $locationProvider) {
+	var homeState = 'root.home';
+	var loginState = 'login';
+	var currentUserType = '';
+	
+    $stateProvider
+	    .state('login', {
+			url: '/login?ref',
+			templateUrl: 'views/login/login.html',
+		    controller: 'loginCtrl as $vm',
+		    resolve: {
+		    	lazyloadScript: ['$ocLazyLoad', function($ocLazyLoad) {
+		    		return $ocLazyLoad.load('login');
+		    	}],
+		    	isLogin: ['$rootScope', '$state', 'dataService', 'sessionService', 'lazyloadScript' , function($rootScope, $state, dataService, sessionService, lazyloadScript){
+		    		$rootScope.isLoginPage = true;
+		    		return dataService.getUserSession().then(function(res){
+		    			if(res && res.data != null){
+		    				sessionService.setUserSession(res.data);
+		    				if($state.current.name != homeState){
+	   	        				 $state.go(homeState);
+	   	        			 }
+	   	        			 else{
+	   	        				 return $q.reject();
+	   	        			 }
+		    			}
+		    		});
+		    	}]
+		    },
+		    data:{
+		    	pageTitle: 'Login'
+		    }
+		})
+	    .state('root', {
+	 		url: '',
+	 		abstract:true,
+	 		resolve: {
+		    	authData: ['$state', 'dataService', 'sessionService' , function($state, dataService, sessionService){
+		    		return dataService.getUserSession().then(function(res){
+		    			if(res && res.data != null){
+		    				
+		    				sessionService.setUserSession(res.data);
+		    				
+		    				currentUserType = res.data.userTypeId;
+		    				
+		    				return res.data;
+		    			}
+		    			else{
+		    				$state.go(loginState);
+		    			}
+		    		});
+		    	}],
+//		    	loadRoleState: function(){
+//		    		lazyLoad.futureStateProvider.futureState({
+//		    		    "stateName": "first",
+//		    		    "urlPrefix": "/first",
+//		    			"type": "lazyLoad",
+//		    		    "src": "app.state.ad.js"
+//		    		  });
+//		    		return true;
+//		    	}
+		    	loadRoleState: ['$ocLazyLoad', 'authData', function($ocLazyLoad, authData) {
+	 				var scriptName = 'module.';
+	 				switch(authData.userTypeId){
+	 					case 1:
+	 						scriptName += 'admin';
+	 					break;
+	 				}
+	 				
+		    		return $ocLazyLoad.load(scriptName);
+		    	}]
+		    },
+	 		views:{
+	 			'': {
+	            	templateUrl: 'views/shared/_layout.html'
+	            },
+	            'header@root': {
+	            	templateUrl: 'views/shared/_header.html'
+	            },
+	            'footer@root': {
+	            	templateUrl: 'views/shared/_footer.html'
+	            },
+	            'leftMenu@root': {
+	            	templateUrl: 'views/shared/_leftMenu.html'
+	            }
+	 		}
+	 	})
+	 	.state('root.home', {
+	 		url: '/',
+//	 		templateUrl: 'views/login/login.html',
+		    controller: 'homeCtrl as $vm',
+	 		resolve: {
+	 			lazyloadScript: ['$ocLazyLoad', 'authData', function($ocLazyLoad, authData) {
+	 				var scriptName = 'home.';
+	 				switch(authData.userTypeId){
+	 					case 1:
+	 						scriptName += 'admin';
+	 					break;
+	 				}
+	 				
+		    		return $ocLazyLoad.load(scriptName);
+		    	}]
+		    }
+	 	});
+//	 	.state('root.student.**',{
+//	 		url: '/student',
+//	 		lazyLoad: function($transition) {
+//	 			$transition.injector().get('$ocLazyLoad').load('/app/module.admin.js');
+//	 		}
+//	 	})
+//	 	.state('root.schedule.**', { 
+//		    url: '/schedule', 
+//		    lazyLoad: function($transition) {
+//	 			$transition.injector().get('$ocLazyLoad').load('/app/module.admin.js');
+//	 		}
+//		  });
+//	    .state('root', {
+//	    	url: '',
+//	    	abstract:true,
+//	    	resolve:{
+//	    		"initData": ['sessionService', function(sessionService){
+//	    			return {
+//	    				userMenu: sessionService.getUserMenu()
+//	    			};
+//	    		}]
+//	    	},
+//	        views: {
+//	        	'': {
+//	            	templateUrl: 'views/shared/_layout.html',
+//	            },
+//	        	'header@root': {
+//	        		templateUrl: 'views/shared/_header.html'
+//	        	},
+//	            'footer@root': {
+//	            	templateUrl: 'views/shared/_footer.html'
+//	            },
+//	            'leftMenu@root': {
+//	            	templateUrl: 'views/shared/_leftMenu.html',
+//	            	controller: 'leftMenuCtrl',
+//	            	controllerAs: 'vm'
+//	            }
+//	        }
+//	    })
+//	    .state('root.home', {
+//	    	url: "/",
+//	    	views:{
+//	    		'@root':{
+//	    			templateUrl: "views/home/index.html",
+//	    			controller: ['progressService', function(progressService){
+//	    				progressService.complete();
+//	    			}]
+//	    		}
+//	    	},
+//	    });
+    
+    //$urlRouterProvider.deferIntercept();
+    $urlRouterProvider.otherwise('/');
+    $locationProvider.html5Mode(true);
+       
+    $stateProviderRef = $stateProvider;
+    
+//    lazyLoad = {stateProvider: $stateProvider, futureStateProvider: $futureStateProvider};
+//    
+//    $futureStateProvider.stateFactory('lazyLoad', function(futureState) {
+//    	console.log(futureState);
+//        return {
+//            name: futureStatePlaceholder.name,
+//            url: futureStatePlaceholder.url
+//        }
+//    });
+    
+//    $urlRouterProviderRef = $urlRouterProvider;
+}]);app.factory('sessionService', ['$rootScope', function ($rootScope) {
+
+    var userSession;
+    var userMenu = [];
+
+    return {
+        getUserSession: function () {
+            return userSession;
+        },
+        setUserSession: function (sessionInfo) {
+            userSession = sessionInfo;
+            $rootScope.$broadcast('updateSession');
+        },
+        pushUserMenu: function(menu){
+        	userMenu.push(menu);
+        },
+        getUserMenu: function () {
+            return userMenu;
+        },
+        clearUserSession: function () {
+            userSession = undefined;
+            $rootScope.$broadcast('updateSession');
+        },
+        isLogin: function () {
+            return userSession ? true : false;
+        },
+        isAdmin: function(){
+        	return userSession && userSession.userTypeId == 1 ? true : false;
+        }
+    };
+
+}]);
+
+app.factory('dataService',['$http', 'CacheFactory', '$timeout', function($http, CacheFactory, $timeout){
+	var apiUrl = {
+			getModules: '/api/getModules',
+	        doLogin: '/api/doLogin',
+	        doLogout: '/api/doLogout',
+	        getUserSession: '/api/getUserSession',
+	        getStudentList: '/api/getStudentList',
+	        getAllCenter: '/api/getAllCenter',
+	        getAllCourse: '/api/getAllCourse',
+	        getIntroClassByCenterAndCourse: '/api/getIntroClassByCenterAndCourse',
+	        getIncomingFirstClass: '/api/getIncomingFirstClass',
+	        addNewStudent: '/api/addNewStudent',
+	        getPendingCheckAttendanceClass: '/api/getPendingCheckAttendanceClass',
+	        getIncomingClass: '/api/getIncomingClass',
+	        getClassSchedule: '/api/getClassSchedule',
+	        getClassInfoById: '/api/getClassInfoById',
+	        getStudentByClass: '/api/getStudentByClass',
+	        changeClassTrainer: '/api/changeClassTrainer',
+	        changeClassTime: '/api/changeClassTime',
+	        updateStudentAttendance: '/api/updateStudentAttendance',
+	        updateClassAttendanceCheck: '/api/updateClassAttendanceCheck',
+	        getAllTrainer: '/api/getAllTrainer',
+	        getStudentInfo: '/api/getStudentInfo',
+	        getStudentClasses: '/api/getStudentClasses',
+	        getStudentActivityLog: '/api/getStudentActivityLog',
+	        getAllCommentType: '/api/getAllCommentType',
+	        getAllCommentResult: '/api/getAllCommentResult',
+	        resetStudentPassword: '/api/resetStudentPassword',
+	        addActivityLog: '/api/addActivityLog',
+	        getQuizReport: '/api/getQuizReport',
+	        getQuizReportDetail: '/api/getQuizReportDetail',
+	        getSystemUser: '/api/getSystemUser',
+	        getUserType: '/api/getUserType',
+	        addNewUser: '/api/addNewUser',
+	        //getStudentBookmarkDetail: '/api/getStudentBookmarkDetail',
+	        getStudentProperty: '/api/getStudentProperty',
+	        getStudentQuiz: '/api/getStudentQuiz',
+	        getStudentOtherActivity: '/api/getStudentOtherActivity',
+	        getCourseActivity: '/api/getCourseActivity',
+	        getStudentAllCourse: '/api/getStudentAllCourse',
+	        updateStudentCourseStatus: '/api/updateStudentCourseStatus',
+	        getOfflineClassForRetake: '/api/getOfflineClassForRetake',
+	        retakeStudentClass: '/api/retakeStudentClass',
+	        getUnitInCourse: '/api/getUnitInCourse',
+	        getCourseHoliday: '/api/getCourseHoliday',
+	        addNewGroupClass: '/api/addNewGroupClass',
+	        getLessonInUnit: '/api/getLessonInUnit',
+	        getActivityCatalouge: '/api/getActivityCatalouge',
+	        getActivityDetails: '/api/getActivityDetails',
+	        getQuizQuestion: '/api/getQuizQuestion',
+	        getAllGroupClass: '/api/getAllGroupClass',
+	        getAllClassType: '/api/getAllClassType',
+	        getUnitByCourseAndClassType: '/api/getUnitByCourseAndClassType',
+	        extendGroupClass: '/api/extendGroupClass'
+	    };
+
+	    var getDataNoParam = function (url) {
+	        return $http.get(url).then(function (result) {
+	            return result.data;
+	        });
+	    };
+
+	    var postDataNoParam = function (url) {
+	        return $http.post(url).then(function (result) {
+	            return result.data;
+	        });
+	    };
+
+	    var postData = function (url, params) {
+	        return $http.post(url, params).then(function (result) {
+	            return result.data;
+	        });
+	    };
+	    
+	    if (!CacheFactory.get('masterDataCache')) {
+	        // or CacheFactory('bookCache', { ... });
+	        CacheFactory.createCache('masterDataCache', {
+	          deleteOnExpire: 'aggressive',
+	          recycleFreq: 60000
+	        });
+	      }
+	    
+	    var masterDataCache = CacheFactory.get('masterDataCache');
+
+	    return {
+	    	getModules: function(userTypeId){	    		
+	    		var url = apiUrl.getModules;
+	            return postData(url, userTypeId);
+	    	},
+	    	//login
+	        doLogin: function (params) {
+	            var url = apiUrl.doLogin;
+	            return postData(url, params);
+	        },
+	        doLogout: function () {
+	            var url = apiUrl.doLogout;
+	            return postDataNoParam(url);
+	        },
+	        getUserSession: function () {
+	            var url = apiUrl.getUserSession;
+	            return postDataNoParam(url);
+	        },
+	        getStudentList: function (params) {
+	            var url = apiUrl.getStudentList;
+	            return postData(url, params);
+	        },
+	        getAllCenter: function(){	        	
+//	        	if(masterDataCache.get(apiUrl.getAllCenter)){
+//	        		return $timeout(function(){
+//	        			return masterDataCache.get(apiUrl.getAllCenter);
+//        			});	        		
+//	        	}
+//	        	else{
+//	        		return $http.get(apiUrl.getAllCenter).then(function(result){
+//	        			masterDataCache.put(apiUrl.getAllCenter, result.data);
+//	        			return result.data;
+//	        		});
+//	        	}
+	        	
+	        	return $http.get(apiUrl.getAllCenter).then(function(result){
+        			//masterDataCache.put(apiUrl.getAllCenter, result.data);
+        			return result.data;
+        		});
+	        	
+//	        	var url = apiUrl.getAllCenter;
+//	        	return postDataNoParam(url);
+	        },
+	        getAllCourse: function(){
+//	        	if(masterDataCache.get(apiUrl.getAllCourse)){
+//	        		return $timeout(function(){
+//	        			return masterDataCache.get(apiUrl.getAllCourse);
+//        			});	        		
+//	        	}
+//	        	else{
+//	        		return $http.get(apiUrl.getAllCourse).then(function(result){
+//	        			masterDataCache.put(apiUrl.getAllCourse, result.data);
+//	        			return result.data;
+//	        		});
+//	        	}
+	        	
+	        	return $http.get(apiUrl.getAllCourse).then(function(result){
+        			//masterDataCache.put(apiUrl.getAllCourse, result.data);
+        			return result.data;
+        		});
+	        	
+//	        	var url = apiUrl.getAllCourse;
+//	        	return postDataNoParam(url);
+	        },
+	        getIntroClassByCenterAndCourse: function(params){
+	        	var url = apiUrl.getIntroClassByCenterAndCourse;
+	        	return postData(url, params);
+	        },
+	        getIncomingFirstClass: function(params){
+	        	var url = apiUrl.getIncomingFirstClass;
+	        	return postData(url, params);
+	        },
+	        addNewStudent: function(params){
+	        	var url = apiUrl.addNewStudent;
+	        	return postData(url, params);
+	        },
+	        getPendingCheckAttendanceClass: function(params){
+	           	var url = apiUrl.getPendingCheckAttendanceClass;
+	        	return postData(url, params);
+	        },
+	        getIncomingClass: function(params){
+	        	var url = apiUrl.getIncomingClass;
+	        	return postData(url, params);
+	        },
+	        getClassSchedule: function(params){
+	        	var url = apiUrl.getClassSchedule;
+	        	return postData(url, params);
+	        },
+	        getClassInfoById: function(params){
+	        	var url = apiUrl.getClassInfoById;
+	        	return postData(url, params);
+	        },
+	        getStudentByClass: function(params){
+	        	var url = apiUrl.getStudentByClass;
+	        	return postData(url, params);
+	        },
+	        changeClassTrainer: function(params){
+	        	var url = apiUrl.changeClassTrainer;
+	        	return postData(url, params);
+	        },
+	        changeClassTime : function(params){
+	        	var url = apiUrl.changeClassTime;
+	        	return postData(url, params);
+	        },
+	        updateStudentAttendance: function(params){
+	        	var url = apiUrl.updateStudentAttendance;
+	        	return postData(url, params);
+	        },
+	        updateClassAttendanceCheck: function(params){
+	        	var url = apiUrl.updateClassAttendanceCheck;
+	        	return postData(url, params);
+	        },
+	        getAllTrainer: function(){
+//	        	if(masterDataCache.get(apiUrl.getAllTrainer)){
+//	        		return $timeout(function(){
+//	        			return masterDataCache.get(apiUrl.getAllTrainer);
+//        			});	        		
+//	        	}
+//	        	else{
+//	        		return $http.get(apiUrl.getAllTrainer).then(function(result){
+//	        			masterDataCache.put(apiUrl.getAllTrainer, result.data);
+//	        			return result.data;
+//	        		});
+//	        	}
+	        	
+	        	return $http.get(apiUrl.getAllTrainer).then(function(result){
+        			return result.data;
+        		});
+	        	
+//	        	var url = apiUrl.getAllTrainer;
+//	        	return postDataNoParam(url);
+	        },
+	        getStudentInfo: function(params){
+	        	var url = apiUrl.getStudentInfo;
+	        	return postData(url, params);
+	        },
+	        getStudentClasses: function(params){
+	           	var url = apiUrl.getStudentClasses;
+	        	return postData(url, params);
+	        },
+	        getStudentActivityLog: function(params){
+	        	var url = apiUrl.getStudentActivityLog;
+	        	return postData(url, params);
+	        },
+	        getAllCommentType: function(){
+	        	var url = apiUrl.getAllCommentType;
+	        	return postDataNoParam(url);
+	        },
+	        getAllCommentResult: function(params){
+	        	var url = apiUrl.getAllCommentResult;
+	        	return postData(url, params);
+	        },
+	        resetStudentPassword: function(params){
+	        	var url = apiUrl.resetStudentPassword;
+	        	return postData(url, params);
+	        },
+	        addActivityLog: function(params){
+	        	var url = apiUrl.addActivityLog;
+	        	return postData(url, params);
+	        },
+	        getQuizReport: function(params){
+	        	var url = apiUrl.getQuizReport;
+	        	return postData(url, params);
+	        },
+	        getQuizReportDetail: function(params){
+	        	var url = apiUrl.getQuizReportDetail;
+	        	return postData(url, params);
+	        },
+	        getSystemUser: function(params){
+	        	var url = apiUrl.getSystemUser;
+	        	return postData(url, params);
+	        },
+	        getUserType: function(){
+	        	
+//	        	if(masterDataCache.get(apiUrl.getUserType)){
+//	        		return $timeout(function(){
+//	        			return masterDataCache.get(apiUrl.getUserType);
+//        			});	        		
+//	        	}
+//	        	else{
+//	        		return $http.get(apiUrl.getUserType).then(function(result){
+//	        			masterDataCache.put(apiUrl.getUserType, result.data);
+//	        			return result.data;
+//	        		});
+//	        	}
+	        	
+	        	return $http.get(apiUrl.getUserType).then(function(result){
+        			return result.data;
+        		});
+	        	
+//	        	var url = apiUrl.getUserType;
+//	        	return postDataNoParam(url);
+	        },
+	        addNewUser: function(params){
+	        	var url = apiUrl.addNewUser;
+	        	return postData(url, params);
+	        },
+//	        getStudentBookmarkDetail: function(params){
+//	        	var url = apiUrl.getStudentBookmarkDetail;
+//	        	return postData(url, params);
+//	        },
+	        getStudentProperty: function(params){
+	        	var url = apiUrl.getStudentProperty;
+	        	return postData(url, params);
+	        },
+	        getStudentQuiz: function(params){
+	        	var url = apiUrl.getStudentQuiz;
+	        	return postData(url, params);
+	        },
+	        getStudentOtherActivity: function(params){
+	        	var url = apiUrl.getStudentOtherActivity;
+	        	return postData(url, params);
+	        },
+	        getCourseActivity: function(params){
+	        	var url = apiUrl.getCourseActivity;
+	        	return postData(url, params);
+	        },
+	        getStudentAllCourse: function(params){
+	        	var url = apiUrl.getStudentAllCourse;
+	        	return postData(url, params);
+	        },
+	        updateStudentCourseStatus: function(params){
+	        	var url = apiUrl.updateStudentCourseStatus;
+	        	return postData(url, params);
+	        },
+	        getOfflineClassForRetake: function(params){
+	        	var url = apiUrl.getOfflineClassForRetake;
+	        	return postData(url, params);
+	        },
+	        retakeStudentClass: function(params){
+	        	var url = apiUrl.retakeStudentClass;
+	        	return postData(url, params);
+	        },
+	        getUnitInCourse: function(params){
+	        	var url = apiUrl.getUnitInCourse;
+	        	return postData(url, params);
+	        },
+	        getCourseHoliday: function(params){
+	        	var url = apiUrl.getCourseHoliday;
+	        	return postData(url, params);
+	        },
+	        addNewGroupClass: function(params){
+	        	var url = apiUrl.addNewGroupClass;
+	        	return postData(url, params);
+	        },
+	        getLessonInUnit: function(params){
+	        	var url = apiUrl.getLessonInUnit;
+	        	return postData(url, params);
+	        },
+	        getActivityCatalouge: function(params){
+	        	var url = apiUrl.getActivityCatalouge;
+	        	return postData(url, params);
+	        },
+	        getActivityDetails: function(params){
+	        	var url = apiUrl.getActivityDetails;
+	        	return postData(url, params);
+	        },
+	        getQuizQuestion: function(params){
+	        	var url = apiUrl.getQuizQuestion;
+	        	return postData(url, params);
+	        },
+	        getAllGroupClass: function(params){
+	        	var url = apiUrl.getAllGroupClass;
+	        	return postData(url, params);
+	        },
+	        getAllClassType: function(){
+	        	
+	        	var key = apiUrl.getAllClassType;
+//	        	
+//	        	if(masterDataCache.get(key)){
+//	        		return $timeout(function(){
+//	        			return masterDataCache.get(key);
+//        			});	        		
+//	        	}
+//	        	else{
+//		        	return $http.get(key).then(function(result){
+//		        		masterDataCache.put(key, result.data);
+//	        			return result.data;
+//	        		});
+//	        	}
+	        	
+	        	return $http.get(key).then(function(result){
+        			return result.data;
+        		});
+	        	
+	        },
+	        getUnitByCourseAndClassType: function(params){
+	        	var url = apiUrl.getUnitByCourseAndClassType;
+	        	return postData(url, params);
+	        },
+	        extendGroupClass: function(params){
+	        	var url = apiUrl.extendGroupClass;
+	        	return postData(url, params);
+	        }
+	    };
+}]);
+
+app.service('notifyService', function () {
+    this.error = function (content, timeout) {
+        showNotify(content, 'error', timeout);
+    };
+
+    this.success = function (content, timeout) {
+        showNotify(content, 'success', timeout);
+    };
+
+    var showNotify = function (content, type, timeout) {
+        timeout = timeout == undefined ? 1400 : timeout;
+        new PNotify({
+            //title: 'Thông báo',
+            text: content,
+            delay: timeout,
+            icon: false,
+            styling: 'bootstrap3',
+            //addclass: "stack_top_right",
+            type: type,
+            //stack: Stacks["stack_top_right"],
+            width: "290px",
+            animate: {
+                animate: false
+                //in_class: 'bounceIn',
+                //out_class: 'bounceOut'
+            },
+            buttons: {
+                sticker: false,
+                closer: false
+            }
+
+        });
+    };
+});
+
+app.service('progressService', ['ngProgressFactory', function (ngProgressFactory) {
+	
+	var progressbar = ngProgressFactory.createInstance();
+	progressbar.setColor('#70ca63');
+	
+    this.start = function () {
+    	progressbar.start();
+    };
+    
+    this.complete = function(){
+    	progressbar.complete();
+    };
+    
+    this.status = function(){
+    	return progressbar.status();
+    };
+    
+    this.reset = function(){
+    	progressbar.reset();
+    };
+}]);app.filter('gender', ['genderArray', function (genderArray) {
+	return function (input) {
+		if (isNaN(input)) {
+			return input;
+		}
+		else if (input == null || !input) {
+			return 'Unknown';
+		}
+		else {
+			return genderArray[input];
+		}
+	}
+}]);
+
+app.filter('dateVN', function () {
+	return function (input) {
+		if (input === '' || !input) {
+			return input;
+		} else {
+			var convertedDate = new Date(input.toString().match(/\d+/)[0] * 1);
+			
+			return moment(convertedDate).format('DD/MM/YYYY')
+		}
+	}
+});
+
+app.filter('dateToDateVN', function () {
+	return function (input) {
+		if (input === '' || !input) {
+			return input;
+		} else {			
+			return moment(input).format('DD/MM/YYYY')
+		}
+	}
+});
+
+app.filter('dateTimeShortVN', function () {
+	return function (input) {
+		if (input === '' || !input) {
+			return input;
+		} else {
+			var convertedDate = new Date(input.toString().match(/\d+/)[0] * 1);
+			
+			return moment(convertedDate).format('DD/MM/YYYY HH:mm')
+		}
+	}
+});
+
+
+app.filter('dateTimeVN', function () {
+    return function (input) {
+        if (input === '' || !input) {
+            return input;
+        } else {
+            var convertedDate = new Date(input.toString().match(/\d+/)[0] * 1);
+
+            return moment(convertedDate).format('DD/MM/YYYY HH:mm:ss');
+        }
+    }
+});
+
+app.filter('unitCompletionPercent', function () {
+	return function (input) {
+		if (input === '' || !input) {
+			return '0%';
+		} else {
+			return (Math.round(input * 100)) + '%';
+		}
+	}
+});
+
+app.filter('unitScore', function () {
+	return function (input) {
+		if (input === '' || !input) {
+			return '0/10';
+		} else {
+			return (Math.round(input * 10)) + '/10';
+		}
+	}
+});
+
+app.filter('unitTimeSpend', function () {
+	return function (input) {
+		if (input === '' || !input) {
+			return '00:00:00';
+		} else {
+			
+			var convertedDate = new Date(1970, 0, 1);
+			convertedDate.setSeconds(input.toString().match(/\d+/)[0] * 1);
+			return moment(convertedDate).format('HH:mm:ss');
+		}
+	}
+});
+app.filter('splitRightAnswer', ['$sce', function ($sce) {
+	return function (val) {
+		if (val) {
+			var lines = val.split('#@WSE@#');
+			var res = '';
+			for (var i = 0; i < lines.length; i++) {
+				if (lines[i] != '') {
+//					if (isShowLineNum) {
+//						res += (i + 1) + '. ' + lines[i] + '<br/>';
+//					}
+//					else {
+//						res += lines[i] + '<br/>';
+//					}
+					
+					res += '<i class="fa fa-check text-success fa-fw"></i>' + lines[i] + '<br/>';
+				}
+			}
+
+			res = res.slice(0, -5);
+			return $sce.trustAsHtml(res);
+		}
+	};
+}]);
+
+app.filter('sliceChar', function(){
+	return function(input, charNumber){
+		
+		charNumber = Math.abs(charNumber);
+		
+		if(input && input.length > charNumber){
+			return input.slice(0, -charNumber);
+		}
+		else{
+			return input;
+		}
+	};
+});app.directive('accessibleForm', function () {
+    return {
+        restrict: 'A',
+        link: function (scope, elem) {
+
+            // set up event handler on the form element
+            elem.on('submit', function () {
+
+                // find the first invalid element
+                var firstInvalid = elem[0].querySelector('.ng-invalid');
+
+                // if we find one, set focus
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+            });
+        }
+    };
+});
+
+app.directive('title', ['$rootScope', '$timeout', '$transitions',
+  function ($rootScope, $timeout, $transitions) {
+  	return {
+  		link: function () {
+
+  			var listener = function (toState) {
+  				console.log(toState);
+  				$timeout(function () {
+  				    $rootScope.title = (toState.data && toState.data.pageTitle) ? toState.data.pageTitle + ' - Learning Management System' : '';
+  				});
+  			};
+  			
+  			$transitions.onStart({ }, function(trans) {
+  				listener(trans.$to());
+  			  });
+  		}
+  	};
+  }
+]);
+
+app.directive("passwordVerify", function () {
+    return {
+        require: "ngModel",
+        scope: {
+            passwordVerify: '='
+        },
+        link: function (scope, element, attrs, ctrl) {
+            scope.$watch(function () {
+                var combined;
+
+                if (scope.passwordVerify || ctrl.$viewValue) {
+                    combined = scope.passwordVerify + '_' + ctrl.$viewValue;
+                }
+                return combined;
+            }, function (value) {
+                if (value) {
+                    ctrl.$parsers.unshift(function (viewValue) {
+                        var origin = scope.passwordVerify;
+                        if (origin !== viewValue) {
+                            ctrl.$setValidity("passwordVerify", false);
+                            return undefined;
+                        } else {
+                            ctrl.$setValidity("passwordVerify", true);
+                            return viewValue;
+                        }
+                    });
+                }
+            });
+        }
+    };
+});
+
+app.directive('fileModel', ['$parse', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var model = $parse(attrs.fileModel);
+            var modelSetter = model.assign;
+
+            element.bind('change', function(){
+                scope.$apply(function(){
+                    modelSetter(scope, element[0].files[0]);
+                });
+            });
+        }
+    };
+}]);
+
+app.directive('onErrorSrc', function() {
+    return {
+        link: function(scope, element, attrs) {
+          element.bind('error', function() {
+        	  attrs.$set('src', scope.noAvatarImgUrl);
+          });
+        }
+    }
+});
+
+app.directive('numbersOnly', function () {
+    return {
+        require: 'ngModel',
+        link: function (scope, element, attr, ngModelCtrl) {
+            function fromUser(text) {
+                if (text) {
+                    var transformedInput = text.replace(/[^0-9]/g, '');
+
+                    if (transformedInput !== text) {
+                        ngModelCtrl.$setViewValue(transformedInput);
+                        ngModelCtrl.$render();
+                    }
+                    return transformedInput;
+                }
+                return undefined;
+            }            
+            ngModelCtrl.$parsers.push(fromUser);
+        }
+    };
+});
+
+app.directive('ngMin', function () {
+	
+	function isEmpty(value) {
+	    return angular.isUndefined(value) || value === '' || value === null || value !== value;
+	}
+	
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, elem, attr, ctrl) {
+            scope.$watch(attr.ngMin, function () {
+                ctrl.$setViewValue(ctrl.$viewValue);
+            });
+            var minValidator = function (value) {
+                var min = attr.ngMin || 0;
+                if (!isEmpty(value)) {
+                	if(isNaN(value)){
+                		ctrl.$setValidity('number', false);
+                		return undefined;
+                	}
+                	else if(Number(value) < min){
+                		ctrl.$setValidity('min', false);
+                		return undefined;
+                	}
+                    return value;
+                } else {
+                    ctrl.$setValidity('min', true);
+                    return value;
+                }
+            };
+
+            ctrl.$parsers.push(minValidator);
+            ctrl.$formatters.push(minValidator);
+        }
+    };
+});
+
+app.directive('ngMax', function () {
+	
+	function isEmpty(value) {
+	    return angular.isUndefined(value) || value === '' || value === null || value !== value;
+	}
+	
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, elem, attr, ctrl) {
+            scope.$watch(attr.ngMax, function () {
+                ctrl.$setViewValue(ctrl.$viewValue);
+            });
+            var maxValidator = function (value) {
+                var max = attr.ngMax || Infinity;
+                if (!isEmpty(value)) {
+                	
+                	if(isNaN(value)){
+                		ctrl.$setValidity('number', false);
+                		return undefined;
+                	}
+                	else if(Number(value) > max){
+                		ctrl.$setValidity('max', false);
+                		return undefined;
+                	}
+                    return value;
+                } else {
+                    ctrl.$setValidity('max', true);
+                    return value;
+                }
+            };
+
+            ctrl.$parsers.push(maxValidator);
+            ctrl.$formatters.push(maxValidator);
+        }
+    };
+});
+
+app.directive('ngRange', [function() {
+	
+	function isEmpty(value) {
+	    return angular.isUndefined(value) || value === '' || value === null || value !== value;
+	}
+	
+    return {
+        require: 'ngModel',
+        link: function(scope, elem, attrs, ctrl) {
+            if (!ctrl) return;
+            
+            var rangeValidator = function(value) {
+            	var range = attrs.ngRange.split(',').map(Number);
+            	if (!isEmpty(value)) {
+                	
+                	if(isNaN(value)){
+                		ctrl.$setValidity('number', false);
+                		return undefined;
+                	}
+                	else if(Number(value) < range[0] || Number(value) > range[1]){
+                		ctrl.$setValidity('range', false);
+                		return undefined;
+                	}
+                    return value;
+                } else {
+                    ctrl.$setValidity('range', true);
+                    return '';
+                }
+            };
+            
+            ctrl.$parsers.push(rangeValidator);
+            ctrl.$formatters.push(rangeValidator);
+        }
+    };
+}]);
+
+app.directive('select2', function(){
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModel) {
+        	$(element).select2();
+//            attrs.$observe('value', function(val){
+//            	console.log(val);
+//            });
+            
+//        	$(element).on('change', function() {
+//                console.log('on change event');
+//                var val = $(this).val();
+//                console.log(val);
+//                scope.$apply(function(){
+//                    //will cause the ng-model to be updated.
+//                    ngModel.$setViewValue(val);
+//                });
+//           });
+//           ngModel.$render = function() {
+//                //if this is called, the model was changed outside of select, and we need to set the value
+//               //not sure what the select2 api is, but something like:
+//               element.value = ngModel.$viewValue;
+//           };
+        	
+//            scope.$watch(function () {
+//                return ngModel.$modelValue;
+//             }, function(newValue, oldVal) {
+////            	 console.log(newValue);
+////            	 console.log(oldVal);
+////            	 if($(element).data('select2')){
+////            		 console.log($(element));
+////            		 $(element).select2();
+////            		 //$(element).val(newValue).trigger('change');
+////            		 //$(element).select2('val', newValue);
+////            	 }
+//             });
+            
+//            scope.$watch('ngModel', function(val){
+//            	console.log(val);
+//            });
+        }
+    };
+});
+
+app.directive('datepicker', function () {
+	
+  return {
+    restrict: 'E',
+    require: 'ngModel',
+    replace: true,
+    templateUrl: 'views/components/datepicker.html',
+    scope: {
+		dateFormat: '@',
+		dateMin: '@',
+		dateMax: '@',
+		placeholder:'@',
+		daysOfWeekDisabled: '=',
+		outputFormat:'@',
+		onSelect: '&',
+		model: '=ngModel',
+		ngClass: '=ngClass'
+	},
+    link: function (scope, elem, attrs, ngModelCtrl) {
+    	
+      scope.dateFormat = angular.isUndefined(scope.dateFormat) ? 'DD/MM/YYYY' : scope.dateFormat;
+      scope.outputFormat = angular.isUndefined(scope.outputFormat) ? 'YYYY-MM-DD' : scope.outputFormat;
+      
+      var dpEle = $(elem).find('input[type=text]:first');
+      
+      var initDatepicker = function(){
+    	  
+    	  //destroy nếu đã có
+    	  if(dpEle.data('DateTimePicker') !== undefined){
+    		  dpEle.data('DateTimePicker').destroy();
+    		  dpEle.unbind('dp.change');
+    	  }
+    	  
+    	  //init option
+          var options = {
+    		  format: scope.dateFormat,
+    		  useCurrent: false,
+    		  pickTime: false,
+    		  minDate: scope.dateMin,
+    		  daysOfWeekDisabled: scope.daysOfWeekDisabled
+          };
+          
+          dpEle.datetimepicker(options);
+          
+          dpEle.on('dp.change', function(e) {
+        	  var momentDate = e.date ? moment(e.date) : null;
+        	  var val = '';
+        	  
+        	  
+        	  if(momentDate != null){
+        		  switch (scope.outputFormat){
+	        		  case 'timestamp':
+	        			  val = momentDate.valueOf();
+	        			  break;
+	        		  default:
+	        			  val = momentDate.format(scope.outputFormat);
+	        			  break;
+        		  };
+    		      
+    		      scope.$apply(function () {
+    		          ngModelCtrl.$setViewValue(val);
+    		        });
+            	  
+            	  if(scope.onSelect !== undefined && momentDate != null)
+            		  scope.onSelect({date: momentDate, formatedDate: val, weekDay: momentDate.weekday()});
+        	  }
+          });
+      };
+      
+      scope.$watch('daysOfWeekDisabled', function(newVal, oldVal){
+    	  
+    	  scope.daysOfWeekDisabled = newVal;
+    	  
+    	  initDatepicker();
+      });
+      
+//      attrs.$observe('dateMin', function(comparisonModel){
+//	      // Whenever the comparison model changes we'll re-validate
+//	      return validate(ctrl.$viewValue);
+//	    });
+      
+      scope.$watch('dateMin', function(newVal, oldVal){
+    	  if(newVal != undefined){
+    		  dpEle.data("DateTimePicker").setMinDate(newVal);
+    	  }
+      });
+      
+      scope.$watch('dateMax', function(newVal, oldVal){
+    	  if(newVal != undefined){
+    		  dpEle.data("DateTimePicker").setMaxDate(newVal);
+    	  }
+      });
+      
+      scope.$watch('model', function(newVal, oldVal){
+    	  if(newVal === undefined){
+    		  dpEle.data('DateTimePicker').setValue('');
+    	  }
+      });
+      
+      initDatepicker();
+    }
+  }
+});
+
+app.directive('timepicker', function(){
+	return {
+	    restrict: 'E',
+	    require: 'ngModel',
+	    replace: true,
+	    templateUrl: 'views/components/timepicker.html',
+	    scope: {
+	    	timeFormat: '@',
+			minuteStepping: '@',
+			placeholder:'@',
+			outputFormat:'@',
+			onSelect: '&',
+			model: '=ngModel',
+			ngClass: '=ngClass'
+		},
+	    link: function (scope, elem, attrs, ngModelCtrl) {
+	    	
+	      scope.timeFormat = angular.isUndefined(scope.timeFormat) ? 'HH:mm' : scope.timeFormat;
+	      scope.outputFormat = angular.isUndefined(scope.outputFormat) ? 'HH:mm' : scope.outputFormat;
+	      scope.minuteStepping = !isNaN(scope.minuteStepping) ? Number(scope.minuteStepping) : 1;
+	      scope.selectedVal = null;
+	      
+	      var dpEle = $(elem).find('input[type=text]:first');
+	      
+	      var initTimepicker = function(){
+	    	  
+	    	  //destroy nếu đã có
+	    	  if(dpEle.data('DateTimePicker') !== undefined){
+	    		  dpEle.data('DateTimePicker').destroy();
+	    		  dpEle.unbind('dp.change');
+	    	  }
+	    	  
+	    	  //init option
+	          var options = {
+	        	  format: scope.timeFormat,
+	        	  useCurrent: true,
+	    		  pickDate: false,
+	    		  useSeconds: false,
+	    		  minuteStepping: scope.minuteStepping
+	          };
+	          
+	          dpEle.datetimepicker(options);
+	          
+	          dpEle.on('dp.change', function(e) {
+	        	  
+	        	  var momentTime = e.date ? moment(e.date) : null;	        	  
+	        	  var val = '';
+	        	  
+	        	  
+	        	  if(momentTime != null){
+	        		  switch (scope.outputFormat){
+		        		  case 'timestamp':
+		        			  val = momentTime.valueOf();
+		        			  break;
+		        		  default:
+		        			  val = momentTime.format(scope.outputFormat);
+		        			  break;
+	        		  };
+	    		      
+	    		      scope.$apply(function () {
+	    		          ngModelCtrl.$setViewValue(val);
+	    		        });
+	            	  
+	            	  if(scope.onSelect !== undefined && momentTime != null)
+	            		  scope.onSelect({date: momentTime, formatedTime: val});
+	        	  }
+	          });
+	      };
+	      
+	      scope.$watch('model', function(newVal, oldVal){
+	    	  if(newVal === undefined){
+	    		  dpEle.data('DateTimePicker').setValue('');
+	    	  }
+	      });
+	      
+	      initTimepicker();
+	    }
+	  }
+});
+
+app.directive('fcEvent', function(){
+	return {
+	    restrict: 'E',
+	    replace: true,
+	    templateUrl: 'views/components/fc-event.html',
+	    scope: {
+			event: '=',
+			style: '@',
+			isAdmin: '='
+			
+		},
+	    link: function (scope, elem, attrs, ngModelCtrl) {
+	    	
+	    	var event = scope.event;
+	    	
+	    	scope.eventClass = '';
+        	if(event.isIncomingClass){
+        		scope.eventClass = 'fc-event-primary';
+        	}
+        	else if(event.isCheckAttendance){
+        		scope.eventClass = 'fc-event-success';
+        	}
+        	else if(!event.isCheckAttendance){
+        		scope.eventClass = 'fc-event-warning';
+        	}
+	  }
+	}
+});
+
+app.directive('pagination', ['$rootScope', '$state', function($rootScope, $state){
+	return {
+	    restrict: 'E',
+	    replace: true,
+	    templateUrl: 'views/components/paging.html',
+	    scope: {
+	    	params: '=',
+	    	totalRow: '='
+		},
+	    link: function (scope, elem, attrs) {
+	    	
+//	    	scope.startIndex = 0;
+//	        scope.endIndex = 0;
+//	        scope.totalCount = 0;
+	        
+	        scope.IsShowCount = true;
+	        scope.stateName = $state.current.name;
+	        scope.CountShowPage = 6;
+//	        scope.params = $state.params;
+	        scope.pageNumber = scope.params.p ? scope.params.p : 1;
+	        
+	        scope.rowPerPage = 0;
+	        scope.startNum = 0;
+	        scope.endNum = 0;
+	        scope.startIndex = 1;
+	        scope.endIndex = 1;
+	        
+	        scope.rowPerPage = scope.params.ps ? scope.params.ps : $rootScope.defaultPageSize;
+	        scope.totalPage = Math.ceil(scope.totalRow / scope.rowPerPage);
+	        
+	        scope.startIndex = ((scope.pageNumber - 1) * scope.rowPerPage) + 1;
+	        scope.endIndex = Number(scope.startIndex) + Number(scope.rowPerPage) - 1;
+	        scope.endIndex = scope.endIndex >= scope.totalRow ? scope.totalRow : scope.endIndex;
+
+	        if (scope.pageNumber <= scope.CountShowPage / 2 && scope.totalPage <= scope.CountShowPage) {
+	            scope.startNum = 1;
+	            scope.endNum = scope.CountShowPage;
+	        }
+	        else if (scope.pageNumber <= scope.CountShowPage / 2 && scope.totalPage > scope.CountShowPage){
+	        	scope.startNum = 1;
+	            scope.endNum = scope.CountShowPage - 1;
+	        }
+	        else if (scope.pageNumber > (scope.totalPage - scope.CountShowPage / 2) && scope.totalPage > scope.CountShowPage) {
+	            scope.endNum = scope.totalPage;
+	            scope.startNum = scope.endNum - (scope.CountShowPage / 2) - 1;
+	        }
+	        else {
+	            scope.startNum = scope.pageNumber - scope.CountShowPage / 2 + 1;
+	            scope.endNum = scope.startNum + scope.CountShowPage / 2;
+	        }
+
+	        if (scope.startNum < 1) {
+	            scope.startNum = 1;
+	        }
+	        if (scope.endNum > scope.totalPage) {
+	            scope.endNum = scope.totalPage;
+	        }
+	        
+//	        var initScope = function(totalRow){
+//	        	
+//	        	scope.apply(function(){	        		
+//		        	
+//	        	});
+//	        };
+	        
+//	        initScope(scope.totalRow);
+	        
+	        scope.getNumber = function (num) {
+	            return new Array(num);
+	        };
+	        
+	        
+	        scope.GoToPage = function (p, e) {
+	        	e.preventDefault();
+	            if (p != scope.params.p) {
+	                $state.go('.', angular.extend(scope.params, { p: p }), { notify: false });
+	            }
+	        };
+	        
+	        scope.PreviousPage = function () {
+	            if (scope.params.p > 1) {
+	            	$state.go('.', angular.extend(scope.params, { p: Number(scope.params.p) - 1 }), { notify: false });
+	            }
+	        };
+
+	        scope.NextPage = function (e) {
+	        	e.preventDefault();
+	            if (scope.params.p < scope.totalPage) {
+	            	$state.go('.', angular.extend(scope.params, { p: Number(scope.params.p) + 1 }), { notify: false });
+	            }
+	        };
+	        
+	        scope.$watch('totalRow', function(val){
+	        	if(val){
+//	        		initScope(val);
+	        		scope.totalPage = Math.ceil(scope.totalRow / scope.rowPerPage);
+
+	    	        if (scope.pageNumber <= scope.CountShowPage / 2 && scope.totalPage <= scope.CountShowPage) {
+	    	            scope.startNum = 1;
+	    	            scope.endNum = scope.CountShowPage;
+	    	        }
+	    	        else if (scope.pageNumber <= scope.CountShowPage / 2 && scope.totalPage > scope.CountShowPage){
+	    	        	scope.startNum = 1;
+	    	            scope.endNum = scope.CountShowPage - 1;
+	    	        }
+	    	        else if (scope.pageNumber > (scope.totalPage - scope.CountShowPage / 2) && scope.totalPage > scope.CountShowPage) {
+	    	            scope.endNum = scope.totalPage;
+	    	            scope.startNum = scope.endNum - (scope.CountShowPage / 2) - 1;
+	    	        }
+	    	        else {
+	    	            scope.startNum = scope.pageNumber - scope.CountShowPage / 2 + 1;
+	    	            scope.endNum = scope.startNum + scope.CountShowPage / 2;
+	    	        }
+
+	    	        if (scope.startNum < 1) {
+	    	            scope.startNum = 1;
+	    	        }
+	    	        if (scope.endNum > scope.totalPage) {
+	    	            scope.endNum = scope.totalPage;
+	    	        }
+//	        		scope.$apply(function(){
+//	        			
+//	        		});
+	        	}
+	        });
+	        
+	        scope.$watch('params.p', function(val){
+	        	if(val){
+	        		scope.pageNumber = val;
+	        		scope.startIndex = ((scope.pageNumber - 1) * scope.rowPerPage) + 1;
+	    	        scope.endIndex = Number(scope.startIndex) + Number(scope.rowPerPage) - 1;
+	    	        scope.endIndex = scope.endIndex >= scope.totalRow ? scope.totalRow : scope.endIndex;
+	    	        if (scope.pageNumber <= scope.CountShowPage / 2 && scope.totalPage <= scope.CountShowPage) {
+	    	            scope.startNum = 1;
+	    	            scope.endNum = scope.CountShowPage;
+	    	        }
+	    	        else if (scope.pageNumber <= scope.CountShowPage / 2 && scope.totalPage > scope.CountShowPage){
+	    	        	scope.startNum = 1;
+	    	            scope.endNum = scope.CountShowPage - 1;
+	    	        }
+	    	        else if (scope.pageNumber > (scope.totalPage - scope.CountShowPage / 2) && scope.totalPage > scope.CountShowPage) {
+	    	            scope.endNum = scope.totalPage;
+	    	            scope.startNum = scope.endNum - (scope.CountShowPage / 2) - 1;
+	    	        }
+	    	        else {
+	    	            scope.startNum = scope.pageNumber - scope.CountShowPage / 2 + 1;
+	    	            scope.endNum = scope.startNum + scope.CountShowPage / 2;
+	    	        }
+
+	    	        if (scope.startNum < 1) {
+	    	            scope.startNum = 1;
+	    	        }
+	    	        if (scope.endNum > scope.totalPage) {
+	    	            scope.endNum = scope.totalPage;
+	    	        }
+	        	}
+	        });
+	    }
+	}
+}]);
+
+app.directive('bootstrapCollapse', function(){
+	return {
+	    restrict: 'A',
+	    link: function (scope, elem, attrs, ngModelCtrl) {
+	    	$(elem).collapse({
+	    		toggle: false
+	    	});
+	    }
+	}
+});
+
+app.directive("dropdown", ['$rootScope', '$timeout', function($rootScope, $timeout) {
+	return {
+		restrict: "E",
+		templateUrl: "views/components/dropdown.html",
+		scope: {
+			placeholder: '@',
+			list: '=',
+			selected: '=',
+			value: '@',
+			text: '@',
+			onSelect: '&?',
+			allowFilter: '@',
+			multiple: '@'
+		},
+		link: function(scope, ele, attrs) {
+			
+			var itemCountToShowFilter = 5;
+			
+			scope.listVisible = false;
+			scope.isPlaceholder = true;
+			
+			scope.select = function(item) {
+				if(item == undefined){
+					scope.selected = undefined;
+					scope.selectedItem = undefined;
+					scope.display = '';
+					scope.isPlaceholder = true;
+				}
+				else if(scope.multiple == undefined && !scope.isSelected(item))
+				{
+					scope.isPlaceholder = false;
+					scope.selected = item[scope.value].toString();
+					scope.selectedItem = item;
+					scope.display = item !== undefined ? item[scope.text] : '';
+				}
+				else if (scope.multiple == undefined && scope.isSelected(item)){
+					scope.isPlaceholder = true;
+					scope.selected = undefined;
+					scope.selectedItem = undefined;
+				}
+				else if(scope.multiple != undefined && (scope.selected == null || !scope.isSelected(item))){
+					scope.isPlaceholder = false;					
+					var arr = scope.selected != undefined ? scope.selected.split(',') : [];
+					arr.push(item[scope.value].toString());					
+					scope.selected = arr.join(',');
+					scope.display = arr.length > 1 ? arr.length + ' ' + scope.placeholder + ' selected' : item[scope.text];
+				}
+				else if(scope.multiple != undefined && scope.isSelected(item)){
+					
+					var arr = scope.selected.split(',');
+					var index = arr.indexOf(item[scope.value].toString());
+					
+					if (index > -1) {
+						arr.splice(index, 1);
+					}
+					scope.selected = arr.length == 0 ? undefined : arr.join(',');
+					scope.isPlaceholder = arr.length == 0;
+					
+					if(arr.length > 1)
+					{
+						scope.display = arr.length > 1 ? arr.length + ' ' + scope.placeholder + ' selected' : item[scope.text];
+					}
+					else if(arr.length == 1){
+						var item = scope.list.filter(function(item){
+							return item[scope.value] == scope.selected;
+						})[0];
+						
+						scope.display = item[scope.text];
+					}
+					else{
+						scope.display = '';
+					}
+				}
+				
+				if(scope.onSelect)
+				{
+					$timeout(function(){
+						scope.onSelect();
+					});
+				}
+			};
+			
+			scope.isSelected = function(item) {
+				if(scope.multiple == undefined){
+					return item[scope.value].toString() == scope.selected;
+				}
+				else{
+					var arr = scope.selected != undefined ? scope.selected.split(',') : [];
+					return arr.indexOf(item[scope.value].toString()) != -1;
+				}
+			};
+
+			scope.show = function() {
+				scope.listVisible = !scope.listVisible;
+			};
+			
+			scope.getList = function(){
+				if(scope.filterInput && scope.list != undefined){
+					return scope.list.filter(function(item){
+						return convertToASCII(item[scope.text]).indexOf(convertToASCII(scope.filterInput)) != -1;
+					});
+				}
+				else{
+					return scope.list;
+				}
+			};
+			
+			scope.clearFilter = function(){
+				scope.filterInput = '';
+			};
+			
+			scope.clearSelect = function(){
+				scope.select();
+			};
+			
+			scope.isShowFilter = function(){				
+				if(scope.allowFilter === undefined){
+					return (scope.list && scope.list.length > itemCountToShowFilter);
+				}
+				else{
+					return scope.allowFilter != 'false';
+				}
+			};
+
+			$rootScope.$on("documentClicked", function(inner, target) {				
+				if (!$(target[0]).is(".dropdown-display.clicked") && !$(target[0]).parents(".dropdown-display.clicked").length > 0
+						&& !$(target[0]).is('.filter-input') && !$(target[0]).is('.clear-filter'))
+				{
+					scope.$apply(function() {
+						scope.listVisible = false;
+					});
+				}
+				else{					
+					var filterInputEle = ele[0].querySelector('.filter-input');
+					if(filterInputEle){
+						filterInputEle.focus();
+					}
+				}
+			});
+			
+			var convertToASCII = function(string){
+				
+				/*remove dau ky tu bt*/
+				string = string.toLowerCase();
+			    string = string.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/ig,"a");
+			    string = string.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/ig,"A");
+			    string = string.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e");
+			    string = string.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g,"E");
+			    string = string.replace(/ì|í|ị|ỉ|ĩ/g,"i");
+			    string = string.replace(/Ì|Í|Ị|Ỉ|Ĩ/g,"I");
+			    string = string.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");
+			    string = string.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g,"O");			    
+			    string = string.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");
+			    string = string.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g,"U");
+			    string = string.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y");
+			    string = string.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g,"Y");
+			    string = string.replace(/đ/g,"d");
+			    string = string.replace(/Đ/g,"d");
+//			    string = string.replace(/!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g," ");
+//			    string = string.replace(/ + /g," ");
+//			    string = string.trim(); 
+				
+				/*remove to hop unicode*/
+				var map = {
+					  '\u0065\u0309': '\u1EBB', //ẻ
+					  '\u0065\u0301': '\u00E9', //é
+					  '\u0065\u0300': '\u00E8', //è
+					  '\u0065\u0323': '\u1EB9', //ẹ
+					  '\u0065\u0303': '\u1EBD', //ẽ
+					  '\u00EA\u0309': '\u1EC3', //ể
+					  '\u00EA\u0301': '\u1EBF', //ế
+					  '\u00EA\u0300': '\u1EC1', //ề
+					  '\u00EA\u0323': '\u1EC7', //ệ
+					  '\u00EA\u0303': '\u1EC5', //ễ
+					  '\u0079\u0309': '\u1EF7', //ỷ
+					  '\u0079\u0301': '\u00FD', //ý
+					  '\u0079\u0300': '\u1EF3', //ỳ
+					  '\u0079\u0323': '\u1EF5', //ỵ
+					  '\u0079\u0303': '\u1EF9', //ỹ
+					  '\u0075\u0309': '\u1EE7', //ủ
+					  '\u0075\u0301': '\u00FA', //ú
+					  '\u0075\u0300': '\u00F9', //ù
+					  '\u0075\u0323': '\u1EE5', //ụ
+					  '\u0075\u0303': '\u0169', //ũ
+					  '\u01B0\u0309': '\u1EED', //ử
+					  '\u01B0\u0301': '\u1EE9', //ứ
+					  '\u01B0\u0300': '\u1EEB', //ừ
+					  '\u01B0\u0323': '\u1EF1', //ự
+					  '\u01B0\u0303': '\u1EEF', //ữ
+					  '\u0069\u0309': '\u1EC9', //ỉ
+					  '\u0069\u0301': '\u00ED', //í
+					  '\u0069\u0300': '\u00EC', //ì
+					  '\u0069\u0323': '\u1ECB', //ị
+					  '\u0069\u0303': '\u0129', //ĩ
+					  '\u006F\u0309': '\u1ECF', //ỏ
+					  '\u006F\u0301': '\u00F3', //ó
+					  '\u006F\u0300': '\u00F2', //ò
+					  '\u006F\u0323': '\u1ECD', //ọ
+					  '\u006F\u0303': '\u00F5', //õ
+					  '\u01A1\u0309': '\u1EDF', //ở
+					  '\u01A1\u0301': '\u1EDB', //ớ
+					  '\u01A1\u0300': '\u1EDD', //ờ
+					  '\u01A1\u0323': '\u1EE3', //ợ
+					  '\u01A1\u0303': '\u1EE1', //ỡ
+					  '\u00F4\u0309': '\u1ED5', //ổ
+					  '\u00F4\u0301': '\u1ED1', //ố
+					  '\u00F4\u0300': '\u1ED3', //ồ
+					  '\u00F4\u0323': '\u1ED9', //ộ
+					  '\u00F4\u0303': '\u1ED7', //ỗ
+					  '\u0061\u0309': '\u1EA3', //ả
+					  '\u0061\u0301': '\u00E1', //á
+					  '\u0061\u0300': '\u00E0', //à
+					  '\u0061\u0323': '\u1EA1', //ạ
+					  '\u0061\u0303': '\u00E3', //ã
+					  '\u0103\u0309': '\u1EB3', //ẳ
+					  '\u0103\u0301': '\u1EAF', //ắ
+					  '\u0103\u0300': '\u1EB1', //ằ
+					  '\u0103\u0323': '\u1EB7', //ặ
+					  '\u0103\u0303': '\u1EB5', //ẵ
+					  '\u00E2\u0309': '\u1EA9', //ẩ
+					  '\u00E2\u0301': '\u1EA5', //ấ
+					  '\u00E2\u0300': '\u1EA7', //ầ
+					  '\u00E2\u0323': '\u1EAD', //ậ
+					  '\u00E2\u0303': '\u1EAB', //ẫ
+					  '\u0045\u0309': '\u1EBA', //Ẻ
+					  '\u0045\u0301': '\u00C9', //É
+					  '\u0045\u0300': '\u00C8', //È
+					  '\u0045\u0323': '\u1EB8', //Ẹ
+					  '\u0045\u0303': '\u1EBC', //Ẽ
+					  '\u00CA\u0309': '\u1EC2', //Ể
+					  '\u00CA\u0301': '\u1EBE', //Ế
+					  '\u00CA\u0300': '\u1EC0', //Ề
+					  '\u00CA\u0323': '\u1EC6', //Ệ
+					  '\u00CA\u0303': '\u1EC4', //Ễ
+					  '\u0059\u0309': '\u1EF6', //Ỷ
+					  '\u0059\u0301': '\u00DD', //Ý
+					  '\u0059\u0300': '\u1EF2', //Ỳ
+					  '\u0059\u0323': '\u1EF4', //Ỵ
+					  '\u0059\u0303': '\u1EF8', //Ỹ
+					  '\u0055\u0309': '\u1EE6', //Ủ
+					  '\u0055\u0301': '\u00DA', //Ú
+					  '\u0055\u0300': '\u00D9', //Ù
+					  '\u0055\u0323': '\u1EE4', //Ụ
+					  '\u0055\u0303': '\u0168', //Ũ
+					  '\u01AF\u0309': '\u1EEC', //Ử
+					  '\u01AF\u0301': '\u1EE8', //Ứ
+					  '\u01AF\u0300': '\u1EEA', //Ừ
+					  '\u01AF\u0323': '\u1EF0', //Ự
+					  '\u01AF\u0303': '\u1EEE', //Ữ
+					  '\u0049\u0309': '\u1EC8', //Ỉ
+					  '\u0049\u0301': '\u00CD', //Í
+					  '\u0049\u0300': '\u00CC', //Ì
+					  '\u0049\u0323': '\u1ECA', //Ị
+					  '\u0049\u0303': '\u0128', //Ĩ
+					  '\u004F\u0309': '\u1ECE', //Ỏ
+					  '\u004F\u0301': '\u00D3', //Ó
+					  '\u004F\u0300': '\u00D2', //Ò
+					  '\u004F\u0323': '\u1ECC', //Ọ
+					  '\u004F\u0303': '\u00D5', //Õ
+					  '\u01A0\u0309': '\u1EDE', //Ở
+					  '\u01A0\u0301': '\u1EDA', //Ớ
+					  '\u01A0\u0300': '\u1EDC', //Ờ
+					  '\u01A0\u0323': '\u1EE2', //Ợ
+					  '\u01A0\u0303': '\u1EE0', //Ỡ
+					  '\u00D4\u0309': '\u1ED4', //Ổ
+					  '\u00D4\u0301': '\u1ED0', //Ố
+					  '\u00D4\u0300': '\u1ED2', //Ồ
+					  '\u00D4\u0323': '\u1ED8', //Ộ
+					  '\u00D4\u0303': '\u1ED6', //Ỗ
+					  '\u0041\u0309': '\u1EA2', //Ả
+					  '\u0041\u0301': '\u00C1', //Á
+					  '\u0041\u0300': '\u00C0', //À
+					  '\u0041\u0323': '\u1EA0', //Ạ
+					  '\u0041\u0303': '\u00C3', //Ã
+					  '\u0102\u0309': '\u1EB2', //Ẳ
+					  '\u0102\u0301': '\u1EAE', //Ắ
+					  '\u0102\u0300': '\u1EB0', //Ằ
+					  '\u0102\u0323': '\u1EB6', //Ặ
+					  '\u0102\u0303': '\u1EB4', //Ẵ
+					  '\u00C2\u0309': '\u1EA8', //Ẩ
+					  '\u00C2\u0301': '\u1EA4', //Ấ
+					  '\u00C2\u0300': '\u1EA6', //Ầ
+					  '\u00C2\u0323': '\u1EAC', //Ậ
+					  '\u00C2\u0303': '\u1EAA' //Ẫ	
+				};
+				
+				for (var key in map) {
+					string = string.replace(new RegExp(key, 'g'), map[key])
+				}
+
+			  return string
+			};
+			
+			scope.$watch("list", function(value) {
+				scope.isPlaceholder = scope.selected === undefined;
+				if(scope.list)
+				{
+					var item = scope.list.filter(function(item){
+						return item[scope.value] == scope.selected;
+					})[0];
+					
+					if(scope.multiple == undefined)
+					{
+						scope.display = item !== undefined ? item[scope.text] : '';
+					}
+					else{
+						var arr = scope.selected != undefined ? scope.selected.split(',') : [];
+						scope.display = arr.length > 1 ? arr.length + ' ' + scope.placeholder + ' selected' : (item !== undefined ? item[scope.text] : '');
+					}
+				}
+			});
+			
+			scope.$watch("selected", function(value) {
+				scope.isPlaceholder = scope.selected === undefined;
+				if(scope.list){
+					var item = scope.list.filter(function(item){
+						return item[scope.value] == scope.selected;
+					})[0];
+					
+					scope.display = item ? item[scope.text] : '';
+				}
+			});
+		}
+	}
+}]);function mainCtrl($scope, $rootScope, $http, $timeout, $state, $q, $urlRouter, sessionService, dataService) {
+	//declaration
+	$scope.sessionInfo;
+	$scope.isLogin;
+	$scope.parentLoaded = false;
+	
+//	$scope.isShowLanguage = false;
+//	
+//	var dialogLogin = document.querySelector('.show-login-popup');
+//    
+//    var loadProgress = $interval(function(){
+//    	var percent = $http.pendingRequests.length == 0 ? 100 : 0;
+//    	
+//    	if(percent == 100){
+//    		$scope.progressbar.complete();
+//    		$interval.cancel(loadProgress);
+//    	}
+//    	
+//    }, 500);
+    
+	 var excludeUrl = [
+	        '/api/updateStudentAttendance'
+	    ];
+
+//    $scope.IsShowLoading = function () {
+//        var countPendingRequest = Enumerable.From($http.pendingRequests)
+//                                            .Count(function(x) {return excludeUrl.indexOf(x.url) == -1;});
+//        return countPendingRequest !== 0;
+//    };
+	
+    $rootScope.$on('updateSession', function(){
+    	$scope.sessionInfo = sessionService.getUserSession();
+    	$scope.isLogin = sessionService.isLogin();
+    	console.log('update sesson');
+    }); 
+	
+//	function getUserSession(){
+//		
+//		var deferred = $q.defer();
+//		
+//		var promise = dataService.getUserSession();
+//		
+//		promise.then(function(res){
+//			if(res.is_success){
+//				sessionService.setUserSession(res.data);
+//			}
+//			else{
+//				sessionService.setUserSession();
+//			}
+//			deferred.resolve();
+//		});
+//		
+//		return deferred.promise;
+//	};
+//	
+//	function getModules(){
+////		var deferred = $q.defer();
+//		var promise = dataService.getModules($scope.sessionInfo.userTypeId);
+//		
+//		promise.then(function(res){
+//			angular.forEach(res, function(value, key) {
+//	          var getExistingState = $state.get(value.name);
+//	          if(getExistingState !== null){
+//	            return; 
+//	          }
+//	          
+//	          var state = value;
+////		          angular.forEach(value.views, function(view) {
+////		            state.views[view.name] = {
+////		              templateUrl: view.templateUrl,
+////		            };
+////		          });
+//
+//	          $stateProviderRef.state(value.name, state);
+//	          
+//	          console.log($stateProviderRef);
+//	        });
+//	        // Configures $urlRouter's listener *after* your custom listener
+//
+//	        $urlRouter.sync();
+//	        $urlRouter.listen();
+//	        
+//	        console.log($stateProviderRef);
+//			
+////			if(res){
+////				//sessionService.setUserSession(res.data);
+////			}
+////			else{
+////				//sessionService.setUserSession();
+////			}
+////			deferred.resolve();
+//		});
+//		
+////		return deferred.promise;
+//	};
+    
+    $scope.init = function(){
+    	$scope.sessionInfo = sessionService.getUserSession();
+    	$scope.userMenu = sessionService.getUserMenu();
+    	$scope.isLogin = sessionService.isLogin();
+    	$scope.parentLoaded = true;
+    	
+    	//init event state change
+//    	$rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState) {
+//    		$scope.pageLoaded = false;
+////    		$scope.progressbar.start();
+////    		if(!sessionService.isLogin() && toState.name != 'login'){
+////    			$state.go('login');
+////    			event.preventDefault();
+////    		}
+////		    else if(sessionService.isLogin() && toState.name == 'login'){
+////		    	//$state.go('home');
+////		    	window.location.href = "/";
+////	    	  event.preventDefault();
+////		    }
+////    		
+////    		$rootScope.pageLoaded = false;
+//    	});
+//    	
+//    	$rootScope.$on('$stateChangeSuccess', function(){
+//    		
+////    		$q.when(getTraineeCurrentCourse())
+////			  .then(function(){
+////				  $scope.progressbar.complete();
+////			  });
+//    		
+//    	});
+    	
+//    	$q.when(getUserSession())
+//    	  .then(function(){
+//    		  getModules();
+//    	  });
+//    	$q.when(getUserSession())
+//    	  .then(function(){
+//    		  $q.all([getTraineeCurrentCourse()])
+//    		  	.then(function(){
+//	    		  	$scope.parentLoaded = true;
+//	    		  	
+//	    		  	if(!dialogLogin.showModal){
+//	    		  		dialogPolyfill.registerDialog(dialogLogin);
+//	    		  	}
+//	    		  	
+	    	    	//init event state change
+//	    	    	$rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState) {
+//	    	    		$scope.progressbar.start();
+//	    	    		if(!sessionService.isLogin() && toState.name != 'login'){
+//	    	    			$state.go('login');
+//	    	    			event.preventDefault();
+//	    	    		}
+//					    else if(sessionService.isLogin() && toState.name == 'login'){
+//					    	//$state.go('home');
+//					    	window.location.href = "/";
+//				    	  event.preventDefault();
+//					    }
+//	    	    		
+//	    	    		$rootScope.pageLoaded = false;
+//	    	    	});
+//	    	    	
+//	    	    	$rootScope.$on('$stateChangeSuccess', function(){
+//	    	    		
+//	    	    		$timeout(function(){
+//	    		  			Core.init();
+//	    		  		}, 1);
+//	    	    		
+//	    	    	});
+//	    	  });
+//    	  });
+    };
+    
+//    $scope.doLogout = function($event){
+//    	$event.preventDefault();
+//    	var promise = dataService.doLogout();
+//    	promise.then(function(){
+//    		window.location.href = '/login?ref=' + encodeURIComponent(window.location.pathname + window.location.search);
+//    	});
+//    };
+    
+};
+
+mainCtrl.$inject = ['$scope', '$rootScope', '$http', '$timeout', '$state', '$q', '$urlRouter', 'sessionService', 'dataService'];
+
+app.controller('mainCtrl', mainCtrl);function pagingCtrl($scope, $rootScope, $timeout, $state) {
+    var self = this;
+    
+    self.startIndex = 0;
+    self.endIndex = 0;
+    self.totalCount = 0;
+    self.rowPerPage = 0;
+    
+    self.IsShowCount = true;
+    self.stateName = $state.current.name;
+    self.CountShowPage = 6;
+    self.params = $state.params;
+    self.pageNumber = self.params.p ? self.params.p : 1;
+    self.startIndex = 1;
+    self.endIndex = 1;
+    self.totalCount = $scope.totalRow;
+    self.rowPerPage = self.params.ps ? self.params.ps : $scope.defaultPageSize;
+    self.totalPage = Math.ceil(self.totalCount / self.rowPerPage);
+    
+
+    self.startIndex = ((self.pageNumber - 1) * self.rowPerPage) + 1;
+    self.endIndex = Number(self.startIndex) + Number(self.rowPerPage) - 1;
+    self.endIndex = self.endIndex >= self.totalCount ? self.totalCount : self.endIndex;
+
+    self.startNum = 0;
+    self.endNum = 0;
+
+    if (self.pageNumber <= self.CountShowPage / 2 && self.totalPage <= self.CountShowPage) {
+        self.startNum = 1;
+        self.endNum = self.CountShowPage;
+    }
+    else if (self.pageNumber <= self.CountShowPage / 2 && self.totalPage > self.CountShowPage){
+    	self.startNum = 1;
+        self.endNum = self.CountShowPage - 1;
+    }
+    else if (self.pageNumber > (self.totalPage - self.CountShowPage / 2) && self.totalPage > self.CountShowPage) {
+        self.endNum = self.totalPage;
+        self.startNum = self.endNum - (self.CountShowPage / 2) - 1;
+    }
+    else {
+        self.startNum = self.pageNumber - self.CountShowPage / 2 + 1;
+        self.endNum = self.startNum + self.CountShowPage / 2;
+    }
+
+    if (self.startNum < 1) {
+        self.startNum = 1;
+    }
+    if (self.endNum > self.totalPage) {
+        self.endNum = self.totalPage;
+    }
+
+    $scope.$watch('parentLoaded', function (parentLoaded) {
+        if (parentLoaded) {
+            
+        }
+    });
+
+    self.PreviousPage = function () {
+        if (self.pageNumber > 1) {
+            $state.params.p = Number(self.pageNumber) - 1;
+            $state.transitionTo($state.current, $state.params, {
+                reload: true,
+                inherit: false,
+                notify: true
+            });
+        }
+    };
+
+    self.NextPage = function () {
+        if (self.pageNumber < self.totalPage) {
+            $state.params.p = Number(self.pageNumber) + 1;
+            $state.transitionTo($state.current, $state.params, {
+                reload: true,
+                inherit: false,
+                notify: true
+            });
+        }
+    };
+
+    self.GoToPage = function (p) {
+        if (p != self.pageNumber) {
+        	self.params.p = p;
+        	self.pageNumber = p;
+//            $state.transitionTo($state.current, $state.params, {
+//                reload: true,
+//                inherit: false,
+//                notify: true
+//            });
+        	
+        	console.log(self.params);
+        	
+            $state.go($state.current, self.params, { notify: false });
+        }
+    };
+    
+    $scope.$watch('totalRow', function(val){
+    	console.log(val);
+    });
+
+    self.getNumber = function (num) {
+        return new Array(num);
+    };
+};
+
+pagingCtrl.$inject = ['$scope', '$rootScope', '$timeout', '$state'];
+
+app.controller('pagingCtrl', pagingCtrl);function dashboardCtrl($scope, $rootScope, $q, $state, $compile, sessionService, dataService, $timeout, $window, progressService) {
+	var vm = this;
+	vm.params = $state.params;
+	vm.isAdminUser = sessionService.isAdmin();
+	vm.nextDayNum = 7;
+	
+	vm.isLoadingPendingCheckAttendaceClass = true;
+	vm.isLoadingIncomingClass = true;
+	progressService.complete();
+	
+	var getPendingCheckAttendanceClass = function(){
+		var deferred = $q.defer();
+		var params = {
+			isAdmin: vm.isAdminUser,
+			courseId: vm.params.courseId,
+			centerId: vm.params.centerId,
+			trainerId: vm.params.trainerId
+		};
+		var promise = dataService.getPendingCheckAttendanceClass(params);
+		promise.then(function(res){
+			vm.listPendingCheckAttendanceClass = res.data;
+			vm.isLoadingPendingCheckAttendaceClass = false;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getIncomingClass = function(){
+		var deferred = $q.defer();
+		var params = {
+			isAdmin: vm.isAdminUser,
+			courseId: vm.params.courseId,
+			centerId: vm.params.centerId,
+			trainerId: vm.params.trainerId,
+			nextDayNum: vm.nextDayNum
+			
+		};
+		var promise = dataService.getIncomingClass(params);
+		promise.then(function(res){
+			vm.listIncomingClass = res.data;
+			vm.isLoadingIncomingClass = false;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getClassSchedule = function(start, end){
+		var params = {
+			isAdmin: vm.isAdminUser,
+			courseId: vm.params.courseId,
+			centerId: vm.params.centerId,
+			trainerId: vm.params.trainerId,
+			startDate: start,
+			endDate: end
+		};
+		return dataService.getClassSchedule(params);
+	};
+	
+	var getAllCourse = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getAllCourse();
+		promise.then(function(res) {
+			vm.listCourse = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+	
+	var getAllCenter = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getAllCenter();
+		promise.then(function(res) {
+			vm.listCenter = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+	
+	var getAllTrainer = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getAllTrainer();
+		promise.then(function(res){
+			vm.listTrainer = res.data;
+			deferred.resolve();
+		});
+		return deferred.promise;
+	};
+	
+	$scope.$watch("parentLoaded", function(parentLoaded){
+		if(parentLoaded) {
+			$q.all([
+				getAllCourse(),
+				getPendingCheckAttendanceClass(),
+				getIncomingClass(),
+				getAllTrainer(),
+				getAllCenter()
+			]).then(function() {
+				
+				$timeout(function(){
+	      			  $('.select2').select2();
+	      		  });
+				
+			});
+			
+			$('#calendar').fullCalendar({
+	            header: {
+	                left: 'prev,next today',
+	                center: 'title',
+	                right: 'month,listMonth,agendaWeek,listWeek,agendaDay,listDay'
+	            },
+	            lang: 'en',
+	            editable: false,
+	            timeFormat: 'h:mma ',
+//	            eventLimit: true,
+	            buttonText:{
+	            	month: 'Month',
+	            	agendaWeek: 'Week',
+	            	agendaDay: 'Day',
+	            	today: 'Today',
+	            	listWeek: 'List Week',
+	            	listMonth: 'List Month',
+	            	listDay: 'List Day',
+	            },
+//	            views: {
+//	            	month: {
+//	                    eventLimit: 1 
+//	                },
+//	                week:{
+//	                	eventLimit: 2
+//	                }
+//	            },
+	            noEventsMessage: "No class to display",
+	            viewRender: function(view) {
+	            	 var h;
+	                 if (view.name == "month") {
+	                     h = NaN;
+	                 }
+	                 else if(view.name == "agendaWeek" || view.name == "agendaDay") {
+	                     h = 1025;  // high enough to avoid scrollbars
+	                     $('#calendar').fullCalendar('option', 'contentHeight', h);
+	                 }
+	            },
+	            eventRender: function(event, element) {
+	                $(element).attr("data-original-title", event.title);
+	            },
+	            eventAfterRender: function(event, element){     
+	            	var eventEle = angular.element(element);
+	            	
+	            	var eventClass = '';
+	            	if(event.isIncomingClass){
+	            		eventClass = 'fc-event-primary';
+	            	}
+	            	else if(event.isCheckAttendance){
+	            		eventClass = 'fc-event-success';
+	            	}
+	            	else if(!event.isCheckAttendance){
+	            		eventClass = 'fc-event-warning';
+	            	}
+	            	
+	            	var json = JSON.stringify(event);
+	            	
+	            	var html = "<fc-event event='" + json + "' is-admin='" + vm.isAdminUser + "'></fc-event>";
+	            	
+//	            	var html = '<a class="fc-event '+ eventClass + '" ui-sref="root.home.classInfo({classId: ' + event.classId + '})" style="' + element[0].style.cssText + '">' +
+//									'<div class="fc-event-desc pn">' +
+//										'<b class="fc-event-desc-detail" title="' + event.unitTitle + '">' +
+//											'<i class="fa fa-file-text-o fa-fw"></i>' + event.unitTitle + '<br/>' +
+//											'<i class="fa fa-user fa-fw"></i>' + event.teacherName
+//											(vm.isAdminUser ? 'Center: ' + event.centerName + '<br/>') : '')
+//											event.teacherName +'<br/>' +
+//										'</b>' +
+//									'</div>' +
+//								'</a>';
+	            	var newEventEle = $compile(html)($scope);
+	            	eventEle.replaceWith(newEventEle);
+	            },
+	            eventClick: function(event){
+	            	var params = {
+	            		classId: event.classId
+	            	};
+	            	$state.transitionTo('root.home.classInfo', params, {
+	                    reload: false,
+	                    inherit: false,
+	                    notify: true
+	                });
+	            },
+	            eventSources:[
+	            	{
+	            		events: function(start, end, timezone, callback){
+	            			var promise = getClassSchedule(start, end);
+	            			
+	            			var listDate = [];
+	            			
+	            			promise.then(function(res){
+	            				var events = [];	            				
+	            				
+	            				angular.forEach(res.data, function(item){
+	            					
+	            					var isLimit = false;
+		            				var date = moment(item.studyDateTime).format($scope.SERVER_DATE_FORMAT);
+		            				
+		            				
+		            				if(listDate.indexOf(date) != -1){
+		            					isLimit = true; 
+		            				}
+		            				else{
+		            					listDate.push(date);
+		            				}
+	            					
+	            					events.push(angular.extend(item, {
+	            						title: item.unitTitle + ' - ' + item.centerName + ' - ' + item.teacherName,
+	            						start: moment(item.studyDateTime).format($scope.FULL_CALENDAR_DATE_TIME_FORMAT),
+	            						isLimit: isLimit,
+	            						allDay: false
+	            					}));
+	            				});
+	            				
+	                            callback(events);
+	            			});
+	            		}
+	            	}
+	            ]
+	        });
+		}
+	});
+	
+	vm.onClickScheduleEvent = function(){
+		
+	};
+	
+	vm.FilterSchedule = function(){
+		$state.transitionTo($state.current, vm.params, {
+            reload: true,
+            inherit: false,
+            notify: true
+        });
+	};
+};
+
+dashboardCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', '$compile', 'sessionService', 'dataService', '$timeout', '$window', 'progressService'];
+
+app.controller('dashboardCtrl', dashboardCtrl);function dashboardTeacherCtrl($scope, $rootScope, $q, $state, $compile, sessionService, dataService, $timeout, progressService) {
+	var vm = this;
+	vm.params = $state.params;
+	vm.nextDayNum = 7;
+	
+	vm.isLoadingPendingCheckAttendaceClass = true;
+	vm.isLoadingIncomingClass = true;
+	progressService.complete();
+	
+	var getPendingCheckAttendanceClass = function(){
+		var deferred = $q.defer();
+		var params = {
+			isAdmin: false,
+			courseId: vm.params.courseId,
+			trainerId: $scope.sessionUserId
+		};
+		var promise = dataService.getPendingCheckAttendanceClass(params);
+		promise.then(function(res){
+			vm.listPendingCheckAttendanceClass = res.data;
+			vm.isLoadingPendingCheckAttendaceClass = false;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getIncomingClass = function(){
+		var deferred = $q.defer();
+		var params = {
+			isAdmin: false,
+			courseId: vm.params.courseId,
+			trainerId: $scope.sessionUserId,
+			nextDayNum: vm.nextDayNum
+			
+		};
+		var promise = dataService.getIncomingClass(params);
+		promise.then(function(res){
+			vm.listIncomingClass = res.data;
+			vm.isLoadingIncomingClass = false;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getClassSchedule = function(start, end){
+		var params = {
+			isAdmin: false,
+			courseId: vm.params.courseId,
+			trainerId: $scope.sessionUserId,
+			startDate: start,
+			endDate: end
+			
+		};
+		return dataService.getClassSchedule(params);
+	};
+	
+	var getAllCourse = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getAllCourse();
+		promise.then(function(res) {
+			vm.listCourse = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+	
+	$scope.$watch("parentLoaded", function(parentLoaded){
+		if(parentLoaded) {
+			$q.all([
+				getAllCourse(),
+				getPendingCheckAttendanceClass(),
+				getIncomingClass()
+			]).then(function() {
+				$timeout(function(){
+	      			  $('.select2').select2();
+	      		  });
+			});
+			
+			$('#calendar').fullCalendar({
+	            header: {
+	                left: 'prev,next today',
+	                center: 'title',
+	                right: 'month,listMonth,agendaWeek,listWeek,agendaDay,listDay'
+	            },
+	            lang: 'en',
+	            editable: false,
+	            timeFormat: 'h:mma ',
+//	            eventLimit: true,
+	            buttonText:{
+	            	month: 'Month',
+	            	agendaWeek: 'Week',
+	            	agendaDay: 'Day',
+	            	today: 'Today',
+	            	listWeek: 'List Week',
+	            	listMonth: 'List Month',
+	            	listDay: 'List Day',
+	            },
+//	            views: {
+//	            	month: {
+//	                    eventLimit: 1 
+//	                },
+//	                week:{
+//	                	eventLimit: 2
+//	                }
+//	            },
+	            noEventsMessage: "No class to display",
+	            viewRender: function(view) {
+	            	 var h;
+	                 if (view.name == "month") {
+	                     h = NaN;
+	                 }
+	                 else if(view.name == "agendaWeek" || view.name == "agendaDay") {
+	                     h = 1025;  // high enough to avoid scrollbars
+	                     $('#calendar').fullCalendar('option', 'contentHeight', h);
+	                 }
+	            },
+	            eventRender: function(event, element) {
+	                $(element).attr("data-original-title", event.title);
+	            },
+	            eventAfterRender: function(event, element){     
+	            	var eventEle = angular.element(element);
+	            	
+	            	var eventClass = '';
+	            	if(event.isIncomingClass){
+	            		eventClass = 'fc-event-primary';
+	            	}
+	            	else if(event.isCheckAttendance){
+	            		eventClass = 'fc-event-success';
+	            	}
+	            	else if(!event.isCheckAttendance){
+	            		eventClass = 'fc-event-warning';
+	            	}
+	            	
+	            	var json = JSON.stringify(event);
+	            	
+	            	var html = "<fc-event event='" + json + "' is-admin='false'></fc-event>";
+	            	
+//	            	var html = '<a class="fc-event '+ eventClass + '" ui-sref="root.home.classInfo({classId: ' + event.classId + '})" style="' + element[0].style.cssText + '">' +
+//									'<div class="fc-event-desc pn">' +
+//										'<b class="fc-event-desc-detail" title="' + event.unitTitle + '">' +
+//											'<i class="fa fa-file-text-o fa-fw"></i>' + event.unitTitle + '<br/>' +
+//											'<i class="fa fa-user fa-fw"></i>' + event.teacherName
+//											(vm.isAdminUser ? 'Center: ' + event.centerName + '<br/>') : '')
+//											event.teacherName +'<br/>' +
+//										'</b>' +
+//									'</div>' +
+//								'</a>';
+	            	var newEventEle = $compile(html)($scope);
+	            	eventEle.replaceWith(newEventEle);
+	            },
+	            eventClick: function(event){
+	            	var params = {
+	            		classId: event.classId
+	            	};
+	            	$state.transitionTo('root.home.classInfo', params, {
+	                    reload: false,
+	                    inherit: false,
+	                    notify: true
+	                });
+	            },
+	            eventSources:[
+	            	{
+	            		events: function(start, end, timezone, callback){
+	            			var promise = getClassSchedule(start, end);
+	            			
+	            			var listDate = [];
+	            			
+	            			promise.then(function(res){
+	            				var events = [];	            				
+	            				
+	            				angular.forEach(res.data, function(item){
+	            					
+	            					var isLimit = false;
+		            				var date = moment(item.studyDateTime).format($scope.SERVER_DATE_FORMAT);
+		            				
+		            				
+		            				if(listDate.indexOf(date) != -1){
+		            					isLimit = true; 
+		            				}
+		            				else{
+		            					listDate.push(date);
+		            				}
+	            					
+	            					events.push(angular.extend(item, {
+	            						title: item.unitTitle + ' - ' + item.centerName + ' - ' + item.teacherName,
+	            						start: moment(item.studyDateTime).format($scope.FULL_CALENDAR_DATE_TIME_FORMAT),
+	            						isLimit: isLimit,
+	            						allDay: false
+	            					}));
+	            				});
+	            				
+	                            callback(events);
+	            			});
+	            		}
+	            	}
+	            ]
+	        });
+		}
+	});
+	
+	vm.onClickScheduleEvent = function(){
+		
+	};
+	
+	vm.FilterSchedule = function(){
+		$state.transitionTo($state.current, vm.params, {
+            reload: true,
+            inherit: false,
+            notify: true
+        });
+	};
+};
+
+dashboardTeacherCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', '$compile', 'sessionService', 'dataService', '$timeout', 'progressService'];
+
+app.controller('dashboardTeacherCtrl', dashboardTeacherCtrl);function classInfoTeacherCtrl($scope, $rootScope, $state, $q, $timeout, dataService) {
+	var vm = this;
+	var classId = $state.params.classId;
+	var currentTrainerId = 0;
+	var currentClassTime = 0;
+	vm.currentTab = 1;
+	vm.isUpdateTrainer = false;
+	vm.isUpdateClassTime = false;
+	vm.listTrainer = [];
+	vm.isLoadingStudentByClass = true;
+	vm.isLoadingListQuiz = true;
+	
+	var getStudentByClass = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getStudentByClass(classId);
+		promise.then(function(res){
+			vm.listStudent = res.data;
+			vm.isLoadingStudentByClass = false;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getClassInfoById = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getClassInfoById(classId);
+		promise.then(function(res){
+			vm.classInfo = res.data;
+			currentTrainerId = vm.classInfo.teacherId;
+			currentClassTime = vm.classInfo.studyDateTime;
+			vm.isMyClass = vm.classInfo.teacherId == $scope.sessionUserId;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	$scope.$watch("parentLoaded", function(parentLoaded){
+		if(parentLoaded){
+			$q.all([
+					getClassInfoById(),
+					getStudentByClass()
+				])
+			  .then(function(){
+				  
+			  });
+		}
+	});
+	
+	vm.checkAttendanceStudent = function(student){
+		
+		var params = {
+				classId: classId,
+				trainerId: $scope.sessionUserId,
+				studentId: student.userId,
+				status: student.isAttended
+		};
+		var promise = dataService.updateStudentAttendance(params);
+		promise.then(function(res){
+			if(res.data.id != 1){
+				$scope.notifyService.error(res.data.message);
+				student.isAttended = !student.isAttended;
+			}
+		});
+	};
+	
+	vm.isAllStudentAttendanceCheck = function(){
+		return vm.listStudent && Enumerable.From(vm.listStudent).Count(function(x) { return x.isAttended == null; }) == 0;
+	};
+	
+	vm.updateClassAttendanceCheck = function(){
+		var params = {
+				classId: classId,
+				trainerId: $scope.sessionUserId
+		};
+		var promise = dataService.updateClassAttendanceCheck(params);
+		promise.then(function(res){
+			if(res.data.id == 1){
+				$scope.notifyService.success(res.data.message);
+			}
+			else{
+				$scope.notifyService.error(res.data.message);
+			}
+		});
+	};
+	
+	vm.initChangeTrainer = function(){
+		vm.isUpdateTrainer = true;
+		if(vm.listTrainer.length == 0){
+			//get list trainer
+			var promise = dataService.getAllTrainer();
+			promise.then(function(res){
+				vm.listTrainer = res.data;
+			});
+		}
+	};
+	
+	vm.changeClassTrainer = function(){
+		
+		if(currentTrainerId != vm.classInfo.teacherId)
+		{
+			//có thay đổi mới cập nhật
+			var params = {
+					isAdmin: $scope.isAdmin,
+					classId: classId,
+					trainerId: $scope.sessionUserId,
+					newTrainerId: vm.classInfo.teacherId
+			};
+			var promise = dataService.changeClassTrainer(params);
+			promise.then(function(res){
+				if(res.data.id == 1){
+					$scope.notifyService.success(res.data.message);
+					currentTrainerId = vm.classInfo.teacherId;
+					vm.classInfo.teacherName = Enumerable.From(vm.listTrainer).First(function(x) { return x.userId == currentTrainerId;}).fullName;
+					vm.isUpdateTrainer = false;
+				}
+				else{
+					$scope.notifyService.error(res.data.message);
+				}
+			});
+		}
+		else{
+			vm.isUpdateTrainer = false;
+		}
+	};
+	
+	vm.cancelChangeTrainer = function(){
+		vm.isUpdateTrainer = false;
+	};
+	
+	vm.initChangeClassTime = function(){
+		vm.isUpdateClassTime = true;
+		$timeout(function(){
+			$('#dtClassTime').datetimepicker({
+	            useCurrent: false,
+	            format: 'DD/MM/YYYY HH:mm',
+	            minuteStepping: 15
+	        });
+			
+			$('#dtClassTime').on("dp.change", function(e) {
+				vm.classInfo.studyDateTime = e.date ? moment(e.date).valueOf() : '';
+            });
+			
+		}, 1);
+	};
+	
+	vm.changeClassTime = function(){
+		if(vm.classInfo.studyDateTime == '')
+		{
+			$scope.notifyService.error('Class time can not be blank');
+		}
+		else if(currentClassTime != vm.classInfo.studyDateTime){
+			//có thay đổi mới cập nhật
+			var params = {
+					isAdmin: $scope.isAdmin,
+					classId: classId,
+					trainerId: $scope.sessionUserId,
+					newClassTime: vm.classInfo.studyDateTime
+			};
+			var promise = dataService.changeClassTime(params);
+			promise.then(function(res){
+				if(res.data.id == 1){
+					$scope.notifyService.success(res.data.message);
+					currentTrainerId = vm.classInfo.studyDateTime;
+					vm.isUpdateClassTime = false;
+				}
+				else{
+					$scope.notifyService.error(res.data.message);
+				}
+			});
+		}
+		else{
+			vm.isUpdateClassTime = false;
+		}
+	};
+	
+	vm.cancelChangeClassTime = function(){
+		vm.isUpdateClassTime = false;
+	};
+	
+	var getQuizReport = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getQuizReport(classId);
+		promise.then(function(res){
+			vm.listQuizReport = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	vm.changeTab = function(tabId){
+		vm.currentTab = tabId;
+		switch(tabId){
+		case 2:
+			{
+				if(!vm.listQuizReport){
+					$q.when(getQuizReport())
+					  .then(function(){
+						  
+					  });
+				}
+			}
+			break;
+		}
+	};
+	
+	var getQuizReportDetail = function(){
+		var deferred = $q.defer();
+		var params = {
+			classId: classId,
+			activityId: vm.currentReportDetailId
+		};
+		var promise = dataService.getQuizReportDetail(params);
+		promise.then(function(res){
+			vm.listQuizReportDetail = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	vm.viewReportDetail = function(activityId){
+		vm.currentTab = 3;
+		if(vm.currentReportDetailId != activityId) {
+			vm.currentReportDetailId = activityId;
+			$q.when(getQuizReportDetail())
+			  .then(function(){
+				  vm.QuizReportDetailView = vm.QuizReportDetailView ? vm.QuizReportDetailView : 1;
+			  });
+		}
+	};
+	
+	vm.getQuizReportStudentDetail = function(studentId){
+		return Enumerable.From(vm.listQuizReportDetail.listStudentDetail).Where(function(x) {return x.userId == studentId; }).ToArray();
+	};
+	
+	vm.calculateQuestionPercent = function(questionId){
+		var countRightAnswer = Enumerable.From(vm.listQuizReportDetail.listStudentDetail).Count(function(x) {return x.questionId == questionId && x.isTraineeAnswerRight; });
+		var totalStudent = vm.listQuizReportDetail.listStudent.length;
+		
+		var result = Number((countRightAnswer / totalStudent) * 100);
+		
+		return Math.round(result) !== result ? result.toFixed(2) : result;
+	};
+	
+	vm.calculateStudentRightPercent = function(totalAnswerRight){
+		
+		var result = ((totalAnswerRight / vm.listQuizReportDetail.reportSummary.numberOfQuestion) * 100);
+		
+		return Math.round(result) !== result ?  result.toFixed(2) : result;
+	};
+	
+	vm.getTraineeAnswerRightByAnswer = function(studentId, questionId){
+		return Enumerable.From(vm.listQuizReportDetail.listStudentDetail)
+						 .First(function(x){ return x.userId == studentId && x.questionId == questionId; }).isTraineeAnswerRight ? '1' : '0';
+	};
+};
+
+classInfoTeacherCtrl.$inject = ['$scope', '$rootScope', '$state', '$q', '$timeout', 'dataService'];
+
+app.controller('classInfoTeacherCtrl', classInfoTeacherCtrl);function studentListCtrl($scope, $state, dataService, $timeout, initData, progressService, $q) {	
+	var vm = this;
+	
+	vm.listCourse = initData.listCourse;
+	vm.listCenter = initData.listCenter;
+	vm.params = $state.params;
+	vm.listData = initData.listData;
+	
+	vm.listStudentStatus = [
+		{value: '', name: 'All'},
+		{value: 'true', name: 'Active'},
+		{value: 'false', name: 'Deactive'}
+	];
+	
+	if(vm.listCourse)
+		{
+	vm.listCourse.unshift({
+		courseId: '',
+		courseTitle: 'All'
+	});
+		}
+	
+	vm.listCenter.unshift({
+		centerId: '',
+		centerName: 'All'
+	});
+	
+	$scope.pageLoaded = true;
+	vm.isLoadingData = false;
+	vm.totalRow = vm.listData && vm.listData.length > 0 ? vm.listData[0].totalRow : 0;
+	progressService.complete();
+	  
+	vm.SearchStudent = function(){
+		vm.params.p = 1;
+		vm.totalRow = 0;
+		$state.go($state.current, vm.params, {notify: false});
+	};
+	
+	$timeout(function(){
+		$scope.$on('$locationChangeSuccess', function(event, from, to) {
+			$timeout(function(){
+		        vm.listData = [];
+		        vm.isLoadingData = true;
+				
+		        var promise = dataService.getStudentList(vm.params);
+		        promise.then(function (res) {
+		            progressService.complete();
+		            
+		            vm.isLoadingData = false;
+		            vm.listData = res.data;
+		            vm.totalRow = vm.listData && vm.listData.length > 0 ? vm.listData[0].totalRow : 0;
+		        });
+			});
+		});
+	});
+};
+
+studentListCtrl.$inject = ['$scope', '$state', 'dataService', '$timeout', 'initData', 'progressService', '$q'];
+
+app.controller('studentListCtrl', studentListCtrl);function addStudentCtrl($scope, $rootScope, $state, $q, $timeout, dataService, progressService) {
+	var vm = this;
+	vm.StudentInfo = {};
+	$scope.$watch('parentLoaded', function(parentLoaded) {
+		if (parentLoaded) {
+			progressService.complete();
+			$q.all([
+				getAllCenter(), 
+				getAllCourse()
+			]).then(function() {
+				vm.minEndDate = $scope.currentDate;
+				$scope.pageLoaded = true;
+				
+	            $timeout(function() {
+	            	
+      			  $('.select2').select2();
+    			  $('.select2-nosearch').select2({ minimumResultsForSearch: -1 });
+	            	
+//                    $('.datepicker').datetimepicker({
+//                        useCurrent: false,
+//                        format: 'DD/MM/YYYY',
+//                        pickTime: false
+//                    });
+//                    
+//                    $('#dtDOB').data("DateTimePicker").setMaxDate(new Date());
+//
+//                    $(".datepicker").on("dp.change", function(e) {
+//                        if (e.target.id == 'dtDOB') {
+//                            vm.StudentInfo.dateOfBirth = e.date ? moment(e.date).valueOf() : '';
+//                        }
+//                        else if(e.target.id == 'dtStartDate'){
+//                        	vm.StudentInfo.startDate = e.date ? moment(e.date).valueOf() : '';
+//                        	$('#dtEndDate').data("DateTimePicker").setMinDate(e.date);
+//                        }
+//                        else {
+//                        	vm.StudentInfo.endDate = e.date ? moment(e.date).valueOf() : '';
+//                        	$('#dtStartDate').data("DateTimePicker").setMaxDate(e.date);
+//                        }
+//                    });
+
+                }, 1);
+	        });
+		}
+	});
+
+	var getAllCenter = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getAllCenter();
+		promise.then(function(res) {
+			vm.listCenter = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+
+	var getAllCourse = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getAllCourse();
+		promise.then(function(res) {
+			vm.listCourse = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+
+	vm.addNewStudent = function() {
+		
+		console.log(vm.addNewStudentForm.$error);
+		
+		if (vm.addNewStudentForm.$valid) {
+			vm.StudentInfo.createdBy = $scope.sessionUserId;
+			vm.StudentInfo.avatarUrl = vm.selectImageDisplay;
+			 var promise = dataService.addNewStudent(vm.StudentInfo);
+			 promise.then(function(res) {
+				 if (res.data.id == 1) {
+		            $scope.notifyService.success(res.data.message);
+		            $timeout(function() {
+		                $state.transitionTo($state.$current.parent, $state.params, {
+		                    reload: true,
+		                    inherit: false,
+		                    notify: true
+		                });
+		            }, 1500);
+		        } 
+				else {
+					$scope.notifyService.error(res.data.message);
+		        }
+			});
+		} else {
+			angular.forEach(vm.addNewStudentForm.$error, function(field) {
+				angular.forEach(field, function(errorField) {
+					errorField.$setDirty();
+				})
+			});
+		}
+	};
+
+	vm.OnChangeCenterOrCourse = function() {
+		if (vm.StudentInfo.courseId && vm.StudentInfo.centerId) {
+			var params = {
+				centerId : vm.StudentInfo.centerId,
+				courseId : vm.StudentInfo.courseId
+			};
+			var promise = dataService.getIntroClassByCenterAndCourse(params);
+			promise.then(function(res) {
+				vm.listIntroClass = res.data;
+			});
+			
+			var loadIncomingFirstClass = dataService.getIncomingFirstClass(params);
+			loadIncomingFirstClass.then(function(res) {
+				vm.listIncomingFirstClass = res.data;
+			});
+			
+		} else {
+			vm.listIntroClass = [];
+			vm.listIncomingFirstClass = [];
+		}
+	};
+	
+	$scope.$watch('selectImage', function(selectImage){
+		if(selectImage){
+			var reader = new FileReader();
+
+            reader.onload = function (e) {
+            	$scope.$apply(function(){
+            		vm.selectImageDisplay = e.target.result;
+                });
+            };
+
+            reader.readAsDataURL(selectImage);
+		}
+	});
+	
+    $rootScope.getBase64FromFile = function(file) {
+ 	   var reader = new FileReader();
+ 	   reader.readAsDataURL(file);
+ 	   reader.onload = function () {
+ 	     console.log(reader.result);
+ 	   };
+ 	   reader.onerror = function (error) {
+ 	     console.log('Error: ', error);
+ 	   };
+ 	};
+	
+	vm.generateIntroClassName = function(introClass){
+		return $rootScope.convertToShortDatetimeVN(introClass.studyDateTime) + ' - ' + introClass.centerName  + ' - ' +  introClass.trainerName + ' (' + introClass.limitUser + ')';
+	};
+	
+	vm.generateIncomingFirstClassName = function(incomingClass){
+		return incomingClass.groupClassName + ' - ' + incomingClass.centerName  + ' - ' +  incomingClass.trainerName + ' - ' + $rootScope.convertToShortDatetimeVN(incomingClass.studyDateTime);
+	};
+	
+	vm.onSelectStartDate = function(date){
+		vm.minEndDate = moment(date).format('DD/MM/YYYY');
+	};
+	
+	vm.onSelectEndDate = function(date){
+		vm.maxStartDate = moment(date).format('DD/MM/YYYY');
+	};
+};
+
+addStudentCtrl.$inject = [ '$scope', '$rootScope', '$state', '$q', '$timeout', 'dataService', 'progressService'];
+
+app.controller('addStudentCtrl', addStudentCtrl);function studentDetailsCtrl($scope, $rootScope, $q, $state, dataService) {
+	var vm = this;
+	
+	vm.tab = $state.params.tab;
+	
+	var studentId = $state.params.id;
+	vm.courseId = $state.params.course;
+	vm.courseTraineeId = $state.params.courseTraineeId;
+	
+	var getStudentInfo = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getStudentInfo(studentId);
+		promise.then(function(res){
+			vm.studentInfo = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise; 
+	};
+	
+	var getStudentAllCourse = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getStudentAllCourse(studentId);
+		promise.then(function(res){
+			vm.listStudentCourse = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+//	var getAllCourseByStudent = function() {
+//		
+//		var deferred = $q.defer();
+//		var promise = dataService.getStudentAllCourse(studentId);
+//		promise.then(function(res){
+//			vm.listCourse = res.data;
+//			deferred.resolve();
+//		});
+//		
+//		return deferred.promise;
+//	};
+	
+	$scope.$watch("parentLoaded", function(parentLoaded){
+		if(parentLoaded){
+			$q.all([
+				getStudentInfo(),
+				getStudentAllCourse()
+			])//
+			  .then(function(){
+				  $scope.pageLoaded = true;
+			  });
+		}
+	});
+	
+	
+	
+	vm.getTemplate = function(){
+		var result = '';
+		switch($state.params.tab){
+			case 'class':
+				result = '/views/student/details/_listClass.html';
+				break;
+			case 'logActivity':
+				result = '/views/student/details/_logActivity.html';
+				break;
+			case 'labActivity':
+				result = '/views/student/details/_labActivity.html';
+				break;
+			case 'contract':
+				result = '/views/student/details/_contract.html';
+				break;
+		}
+		
+		return result;
+	};
+	
+	vm.changeTab = function(tabName){
+		$state.params.tab = tabName;
+		vm.tab = tabName; 
+		
+		if(tabName == 'labActivity'){
+			$state.params.st = $state.params.st ? $state.params.st : 'property';
+		}
+		
+		$state.transitionTo($state.current, $state.params, {
+            reload: false,
+            inherit: false,
+            notify: true
+        });
+	};
+	
+	vm.resetPassword = function(){
+		bootbox.confirm("Are you sure want to reset student password? Student password will reset to " + $scope.defaultPassword, function(result){
+			if(result){
+				var params = {
+					actionUser: $scope.sessionUserId,
+					studentId: studentId,
+					newPassword: $scope.defaultPassword
+				};
+				
+				var promise = dataService.resetStudentPassword(params);
+				promise.then(function(res){
+					if (res.data.id == 1) {
+			            $scope.notifyService.success(res.data.message);
+			        } 
+					else {
+						$scope.notifyService.error(res.data.message);
+			        }
+				});
+			}
+		});
+	};
+	
+//	
+//	var getStudentAllCourse = function(){
+//		var deferred = $q.defer();
+//		var promise = dataService.getStudentAllCourse(studentId);
+//		promise.then(function(res){
+//			vm.listStudentCourse = res.data;
+//			deferred.resolve();
+//		});
+//		
+//		return deferred.promise;
+//	};
+//	
+
+//	
+
+//	
+////	var getAllCommentResult = function(){
+////		if(vm.listCommentResult.length == 0){
+////			var deferred = $q.defer();
+////			var promise = dataService.getAllCommentResult();
+////			promise.then(function(res){
+////				vm.listCommentResult = res.data;
+////				deferred.resolve();
+////			});
+////			
+////			return deferred.promise;
+////		}
+////	};
+//	
+//	$scope.$watch("parentLoaded", function(parentLoaded){
+//		if(parentLoaded){
+//			$q.all([
+//				getStudentInfo(),
+//				getStudentClassInfo(),
+////				getAllCourseByStudent()
+//			])//
+//			  .then(function(){
+//				  $scope.pageLoaded = true;
+//			  });
+//		}
+//	});
+//	
+//	vm.resetPassword = function(){
+//		bootbox.confirm("Are you sure want to reset student password? Student password will reset to " + $scope.defaultPassword, function(result){
+//			if(result){
+//				var params = {
+//					actionUser: $scope.sessionUserId,
+//					studentId: studentId,
+//					newPassword: $scope.defaultPassword
+//				};
+//				
+//				var promise = dataService.resetStudentPassword(params);
+//				promise.then(function(res){
+//					if (res.data.id == 1) {
+//			            $scope.notifyService.success(res.data.message);
+//			        } 
+//					else {
+//						$scope.notifyService.error(res.data.message);
+//			        }
+//				});
+//			}
+//		});
+//	};
+//	
+//	
+////	vm.changeTab = function(tabId){
+////		vm.currentTab = tabId;
+////		switch(tabId){
+////			case 1:
+////				break;
+////			case 2:
+////				$q.all([
+////					getAllCommentType(),
+////					getStudentActivityLog()
+////				])
+////				  .then(function(){
+////					  
+////				  });
+////				break;
+////			case 3:
+////				
+////				$q.when(getStudentAllCourse())
+////				  .then(function(){
+////					  
+////				  });
+////				
+////				break;
+////			case 4:
+////				vm.currentActivityLabTab = 1;
+////				$q.when(getStudentProperty(),
+////						$scope.getCourseActivity(vm.courseId))
+////				  .then(function(){
+////					  
+////				  });
+////				break;
+////		}
+////	};
+//	
+
+//	
+
+//	
+//	vm.reloadLabActivity = function(){
+//		var funcArr = [];
+//		switch(vm.currentActivityLabTab){
+//			case 1:
+//				funcArr.push(getStudentProperty());
+//				break;
+//			case 2:
+//				funcArr.push(getStudentQuiz());
+//				break;
+//			case 3:
+//				funcArr.push(getStudentOtherActivity());
+//				break;
+//		};
+//		
+//		$q.all(funcArr)
+//		  .then(function(){
+//			  
+//		  });
+//	};
+//	
+
+//	
+};
+
+studentDetailsCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', 'dataService'];
+
+app.controller('studentDetailsCtrl', studentDetailsCtrl);function systemUserListCtrl($scope, $rootScope, $q, $state, $stateParams, dataService, $timeout, initData, progressService) {
+	var vm = this;
+	
+	vm.listUserType = initData.listUserType;
+	vm.listData = initData.listData;
+	vm.params = $state.params;
+	
+	vm.listUserStatus = [
+		{value: '', name: 'All'},
+		{value: 'true', name: 'Active'},
+		{value: 'false', name: 'Deactive'}
+	];
+	
+	vm.listUserType.unshift({
+		userTypeId: '',
+		userTypeName: 'All'
+	});
+	
+	$scope.pageLoaded = true;
+	vm.isLoadingData = false;
+	vm.totalRow = vm.listData && vm.listData.length > 0 ? vm.listData[0].totalRow : 0;
+	progressService.complete();
+	
+	vm.SearchUser = function(){
+		vm.params.p = 1;
+		vm.totalRow = 0;
+		$state.go($state.current, vm.params, {notify: false});
+	};
+	
+	$timeout(function(){
+		$scope.$on('$locationChangeSuccess', function(event, from, to) {			
+			$timeout(function(){
+				vm.listData = [];
+		        vm.isLoadingData = true;
+				
+		        var promise = dataService.getSystemUser(vm.params);
+		        promise.then(function (res) {
+		            vm.listData = res.data;
+		            progressService.complete();
+		            
+		            vm.isLoadingData = false;
+		            vm.listData = res.data;
+		            vm.totalRow = vm.listData && vm.listData.length > 0 ? vm.listData[0].totalRow : 0;
+		        });
+			});
+		});
+	});
+};
+
+systemUserListCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', '$stateParams', 'dataService', '$timeout', 'initData', 'progressService'];
+
+app.controller('systemUserListCtrl', systemUserListCtrl);function addUserCtrl($scope, $rootScope, $state, $q, $timeout, dataService) {
+	var vm = this;
+//	vm.StudentInfo = {};
+	$scope.$watch('parentLoaded', function(parentLoaded) {
+		if (parentLoaded) {
+	
+			$q.all([
+				getUserType()
+			]).then(function() {
+				
+				$scope.pageLoaded = true;
+				
+	            $timeout(function() {
+	      			  $('.select2').select2();
+	    			  $('.select2-nosearch').select2({ minimumResultsForSearch: -1 });
+	            	
+                    $('.datepicker').datetimepicker({
+                        useCurrent: false,
+                        format: 'DD/MM/YYYY',
+                        pickTime: false
+                    });
+                    
+                    $('#dtDOB').data("DateTimePicker").setMaxDate(new Date());
+
+                    $(".datepicker").on("dp.change", function(e) {
+                        if (e.target.id == 'dtDOB') {
+                            vm.UserInfo.dateOfBirth = e.date ? moment(e.date).valueOf() : '';
+                        }
+                    });
+
+                }, 1);
+	        });
+		}
+	});
+
+	var getUserType = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getUserType();
+		promise.then(function(res) {
+			vm.listUserType = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+//
+//	var getAllCourse = function() {
+//		var deferred = $q.defer();
+//		var promise = dataService.getAllCourse();
+//		promise.then(function(res) {
+//			vm.listCourse = res.data;
+//			deferred.resolve();
+//		});
+//
+//		return deferred.promise;
+//	};
+//
+	vm.addNewUser = function() {
+		if (vm.addNewUserForm.$valid) {
+			vm.UserInfo.createdBy = $scope.sessionUserId;
+			 var promise = dataService.addNewUser(vm.UserInfo);
+			 promise.then(function(res) {
+				 if (res.data.id == 1) {
+		            $scope.notifyService.success(res.data.message);
+		            $timeout(function() {
+		                $state.transitionTo($state.$current.parent, $state.params, {
+		                    reload: true,
+		                    inherit: false,
+		                    notify: true
+		                });
+		            }, 1500);
+		        } 
+				else {
+					$scope.notifyService.error(res.data.message);
+		        }
+			});
+		} else {
+			angular.forEach(vm.addNewUserForm.$error, function(field) {
+				angular.forEach(field, function(errorField) {
+					errorField.$setDirty();
+				})
+			});
+		}
+	};
+//
+//	vm.OnChangeCenterOrCourse = function() {
+//		if (vm.StudentInfo.courseId && vm.StudentInfo.centerId) {
+//			var params = {
+//				centerId : vm.StudentInfo.centerId,
+//				courseId : vm.StudentInfo.courseId
+//			};
+//			var promise = dataService.getIntroClassByCenterAndCourse(params);
+//			promise.then(function(res) {
+//				vm.listIntroClass = res.data;
+//			});
+//			
+//			var loadIncomingFirstClass = dataService.getIncomingFirstClass(params);
+//			loadIncomingFirstClass.then(function(res) {
+//				vm.listIncomingFirstClass = res.data;
+//			});
+//			
+//		} else {
+//			vm.listIntroClass = [];
+//			vm.listIncomingFirstClass = [];
+//		}
+//	};
+//	
+//	$scope.$watch('selectImage', function(selectImage){
+//		if(selectImage){
+//			var reader = new FileReader();
+//
+//            reader.onload = function (e) {
+//            	$scope.$apply(function(){
+//            		vm.selectImageDisplay = e.target.result;
+//                });
+//            };
+//
+//            reader.readAsDataURL(selectImage);
+//		}
+//	});
+//	
+//    $rootScope.getBase64FromFile = function(file) {
+// 	   var reader = new FileReader();
+// 	   reader.readAsDataURL(file);
+// 	   reader.onload = function () {
+// 	     console.log(reader.result);
+// 	   };
+// 	   reader.onerror = function (error) {
+// 	     console.log('Error: ', error);
+// 	   };
+// 	};
+//	
+//	vm.generateIntroClassName = function(introClass){
+//		return $rootScope.convertToShortDatetimeVN(introClass.studyDateTime) + ' - ' + introClass.centerName  + ' - ' +  introClass.trainerName + ' (' + introClass.limitUser + ')';
+//	};
+//	
+//	vm.generateIncomingFirstClassName = function(incomingClass){
+//		return incomingClass.groupClassName + ' - ' + incomingClass.centerName  + ' - ' +  incomingClass.trainerName + ' - ' + $rootScope.convertToShortDatetimeVN(incomingClass.studyDateTime);
+//	};
+};
+
+addUserCtrl.$inject = [ '$scope', '$rootScope', '$state', '$q', '$timeout', 'dataService' ];
+
+app.controller('addUserCtrl', addUserCtrl);function studentClassInfoCtrl($scope, $rootScope, $state, $q, dataService, $timeout) {
+	var vm = this;
+	
+	var studentId = $state.params.id;
+	vm.courseId = $state.params.course;
+	vm.courseTraineeId = $state.params.courseTraineeId;
+	vm.showPopupRetake = false;
+	
+	var getStudentClassInfo = function(){
+		var deferred = $q.defer();
+		var params = {
+			traineeId: studentId,
+			courseTraineeId: vm.courseTraineeId
+		};
+		var promise = dataService.getStudentClasses(params);
+		promise.then(function(res){
+			vm.listStudentClass = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise; 
+	};
+	
+	$q.all([
+		getStudentClassInfo()
+	]).then(function(){
+		
+	});
+	
+	vm.retakeClass = function(classInfo){
+		var promise = dataService.getOfflineClassForRetake(classInfo.unitId);
+		promise.then(function(res){
+			vm.listRetakeClass = res.data;
+			vm.retakeUnitTitle = classInfo.unitTitle;
+			vm.retakeInfo = {
+				classId: 0,
+				oldClassId: classInfo.classId,
+				unitId: classInfo.unitId
+			}
+			vm.showPopupRetake = true;
+		});
+	};
+	
+	vm.bookRetakeClass = function(){
+		
+		if(vm.retakeInfo.classId && vm.retakeInfo.classId > 0)
+		{
+			vm.retakeInfo.courseTraineeId = vm.courseTraineeId;
+			vm.retakeInfo.createdBy = $rootScope.sessionUserId;
+			
+			
+			var promise = dataService.retakeStudentClass(vm.retakeInfo);
+			promise.then(function(res){
+				if(res.data.id == 1){
+					$scope.notifyService.success(res.data.message);
+					vm.showPopupRetake = false;
+					
+					var params = {
+						traineeId: studentId,
+						courseTraineeId: vm.courseTraineeId
+					};
+					var reloadClass = dataService.getStudentClasses(params);
+					reloadClass.then(function(res){
+						vm.listStudentClass = res.data;
+					});
+					
+					//Enumerable.From(vm.listStudentClass).First(function(x) { return x.classId == vm.retakeInfo.oldClassId; }).isRetake = true;
+				}
+				else{
+					$scope.notifyService.error(res.data.message);
+				}
+			});
+			
+		}
+		else{
+			$scope.notifyService.error('Choose a class to book');
+		}
+	};
+	
+};
+
+studentClassInfoCtrl.$inject = ['$scope', '$rootScope', '$state', '$q', 'dataService', '$timeout'];
+
+app.controller('studentClassInfoCtrl', studentClassInfoCtrl);function studentLogActivityCtrl($scope, $rootScope, $state, $q, dataService) {	
+	var vm = this;
+	var studentId = $state.params.id;
+	vm.courseId = $state.params.course;
+	vm.courseTraineeId = $state.params.courseTraineeId;
+	
+	var getStudentActivityLog = function(){
+		var deferred = $q.defer();
+		var params = {
+			studentId: studentId,
+			courseTraineeId: vm.courseTraineeId
+		};
+		var promise = dataService.getStudentActivityLog(params);
+		promise.then(function(res){
+			vm.listActivityLog = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getAllCommentType = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getAllCommentType();
+		promise.then(function(res){
+			vm.listCommentType = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	$q.all([
+		getStudentActivityLog(),
+		getAllCommentType()
+	]).then(function(){
+		
+	});
+	
+	vm.onChangeCommentType = function(){
+		if(vm.newActivityLog.commentTypeId){
+			
+			var promise = dataService.getAllCommentResult(vm.newActivityLog.commentTypeId);
+			promise.then(function(res){
+				vm.listCommentResult = res.data;
+			});
+		}
+		else{
+			vm.listCommentResult = [];
+		}
+	};
+	
+	vm.addActivityLog = function(){
+		if (vm.addActivityLogForm.$valid) {
+			var params = angular.extend(vm.newActivityLog, {
+				trainerId: $scope.sessionUserId,
+				courseTraineeId: vm.courseTraineeId,
+				studentId: studentId
+			});
+			var promise = dataService.addActivityLog(params);
+			
+			promise.then(function(res){
+				if(res.data.id != -1){
+					$scope.notifyService.success(res.data.message);
+					
+					var paramsReload = {
+						studentId: studentId,
+						courseTraineeId: vm.courseTraineeId
+					};
+					
+					vm.newActivityLog.commentContent = '';
+					
+					var promiseReload = dataService.getStudentActivityLog(paramsReload);
+					promiseReload.then(function(res){
+						vm.listActivityLog = res.data;
+					});
+				}
+				else{
+					$scope.notifyService.error(res.data.message);
+				}
+			});
+		}
+		else{
+			angular.forEach(vm.addActivityLogForm.$error, function(field) {
+				angular.forEach(field, function(errorField) {
+					errorField.$setDirty();
+				})
+			});
+		}
+	};
+};
+
+studentLogActivityCtrl.$inject = ['$scope', '$rootScope', '$state', '$q', 'dataService'];
+
+app.controller('studentLogActivityCtrl', studentLogActivityCtrl);function studentLabActivityCtrl($scope, $rootScope, $state, $q, dataService, $timeout) {	
+	var vm = this;
+	var studentId = $state.params.id;
+	vm.courseId = $state.params.course;
+	vm.courseTraineeId = $state.params.courseTraineeId;
+	vm.currentLabTab = $state.params.st ? $state.params.st : 'property';
+	vm.labActivityFilter = {
+		unitId: undefined,
+		lessonId: undefined
+	};
+	
+	var getStudentProperty = function(){
+		
+		vm.listStudentProperty = null;
+		
+		var deferred = $q.defer();
+		var params = {
+			lessonId: vm.labActivityFilter.lessonId,
+			courseTraineeId: vm.courseTraineeId,
+			unitId: vm.labActivityFilter.unitId
+		};
+		var promise = dataService.getStudentProperty(params);
+		promise.then(function(res){
+			vm.listStudentProperty = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getStudentQuiz = function(){
+		vm.listStudentOtherActivity = null;
+		var deferred = $q.defer();
+		var params = {
+			lessonId: vm.labActivityFilter.lessonId,
+			courseTraineeId: vm.courseTraineeId,
+			unitId: vm.labActivityFilter.unitId
+		};
+		var promise = dataService.getStudentQuiz(params);
+		promise.then(function(res){
+			vm.listStudentQuiz = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	var getStudentOtherActivity = function(){
+		vm.listStudentOtherActivity = null;
+		var deferred = $q.defer();
+		var params = {
+			lessonId: vm.labActivityFilter.lessonId,
+			courseTraineeId: vm.courseTraineeId,
+			unitId: vm.labActivityFilter.unitId
+		};
+		var promise = dataService.getStudentOtherActivity(params);
+		promise.then(function(res){
+			vm.listStudentOtherActivity = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	vm.changeLabActivityTab = function(tabName){
+		
+		tabName = tabName ? tabName : $state.params.st; 
+		
+		$state.params.st = tabName;
+		vm.currentLabTab = tabName;
+		
+		var funcArr = [];
+		switch(vm.currentLabTab){
+			case 'property':
+				funcArr.push(getStudentProperty());
+				break;
+			case 'quiz':
+				funcArr.push(getStudentQuiz());
+				break;
+			case 'other':
+				funcArr.push(getStudentOtherActivity());
+				break;
+		};
+		
+		$q.all(funcArr)
+		  .then(function(){
+			  $timeout(function(){
+				  $('.select2').select2();
+				  $('.select2-nosearch').select2({ minimumResultsForSearch: -1 }); 
+			  });
+			  
+			  $state.transitionTo($state.current, $state.params, {
+		            reload: false,
+		            inherit: false,
+		            notify: true
+		        });
+		  });
+		
+		
+	};
+	
+	var listCourseUnit = [];
+	var listlessonByUnit = [];
+	var currentUnitId = null;
+	
+	vm.getUnitInCourse = function(){
+		if($scope.listCourseActivity[vm.courseId] && listCourseUnit.length == 0){
+			
+			listCourseUnit = Enumerable.From($scope.listCourseActivity[vm.courseId])
+			 .Distinct('$.unitId')
+			 .Select('{unitId: $.unitId, unitTitle: $.unitTitle}')
+			 .ToArray();
+		}
+		return listCourseUnit;
+	};
+	
+	vm.getLessonByUnit = function(unitId){
+		if($scope.listCourseActivity[vm.courseId] && unitId != currentUnitId){
+			
+			currentUnitId = unitId;
+			
+			listlessonByUnit = Enumerable.From($scope.listCourseActivity[vm.courseId])
+			 .Distinct('$.lessonId')
+			 .Where(function(x){ return x.unitId == unitId; })
+			 .Select('{lessonId: $.lessonId, lessonTitle: $.lessonTitle}')
+			 .ToArray();
+		}
+		return listlessonByUnit;
+	};
+	
+	vm.getTotalWrongAnswer = function(listQuizDetail){
+		return Enumerable.From(listQuizDetail).Count(function(x) { return !x.isTraineeAnswerRight; });
+	};
+	
+	vm.getTotalRightAnswer = function(listQuizDetail){
+		return Enumerable.From(listQuizDetail).Count(function(x) { return x.isTraineeAnswerRight; });
+	};
+	
+	vm.getTotalQuestion = function(listQuizDetail){
+		return listQuizDetail.length;
+	};
+	
+	vm.showQuizDetail = function(quiz){
+		quiz.isShowDetail = quiz.isShowDetail == undefined ? false : quiz.isShowDetail;
+		 quiz.isShowDetail = !quiz.isShowDetail;
+	};
+	
+	var loadDataFunc = [];
+	loadDataFunc.push($scope.getCourseActivity(vm.courseId));
+	switch(vm.currentLabTab){
+		case 'property':
+			loadDataFunc.push(getStudentProperty());
+			break;
+		case 'quiz':
+			loadDataFunc.push(getStudentQuiz());
+			break;
+		case 'other':
+			loadDataFunc.push(getStudentOtherActivity());
+			break;
+	}
+	
+	$q.all(loadDataFunc).then(function(){
+		
+	});
+	
+	vm.onChangeUnit = function(){
+		vm.labActivityFilter.lessonId = undefined;
+		vm.changeLabActivityTab();
+	};
+};
+
+studentLabActivityCtrl.$inject = ['$scope', '$rootScope', '$state', '$q', 'dataService', '$timeout'];
+
+app.controller('studentLabActivityCtrl', studentLabActivityCtrl);function studentContractInfoCtrl($scope, $rootScope, $state, $q, dataService) {
+	var vm = this;
+	
+	var studentId = $state.params.id;
+	vm.courseId = $state.params.course;
+	vm.courseTraineeId = $state.params.courseTraineeId;
+	
+	var getStudentAllCourse = function(){
+		var deferred = $q.defer();
+		var promise = dataService.getStudentAllCourse(studentId);
+		promise.then(function(res){
+			vm.listStudentCourse = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	$q.all([
+		getStudentAllCourse()
+	]).then(function(){
+		
+	});
+	
+	/*cap nhat trang thai cua khoa hoc*/
+	vm.updateStudentCourseStatus = function(course){
+		var confirmText = course.isActive ? 'Are you sure want to active student course?' : 'Are you sure want to deactive student course?';
+		bootbox.confirm(confirmText, function(res){
+			if(res){
+				var params = {
+						
+				};
+				
+				var params = {
+					courseTraineeId: course.courseTraineeId,
+					currentStatus: !course.isActive,
+					newStatus: course.isActive
+				};
+				var promise = dataService.updateStudentCourseStatus(params);
+				promise.then(function(res){
+					if(res.data.id == 1){
+						$scope.notifyService.success(res.data.message);
+					}
+					else{
+						course.isActive = !course.isActive;
+						$scope.notifyService.error(res.data.message);
+					}
+				});
+				
+				
+			}
+			else{
+				$scope.$apply(function(){
+					course.isActive = !course.isActive;
+				});
+			}
+		});
+	};
+	
+};
+
+studentContractInfoCtrl.$inject = ['$scope', '$rootScope', '$state', '$q', 'dataService'];
+
+app.controller('studentContractInfoCtrl', studentContractInfoCtrl);function classGroupListCtrl($scope, $rootScope, $q, $state, dataService, $timeout, progressService, notifyService, initData) {
+	var vm = this;
+	
+	vm.listCourse = initData.listCourse;
+	vm.listCenter = initData.listCenter;
+	vm.listTrainer = initData.listTrainer;
+	vm.listClassType = initData.listClassType;
+	vm.params = $state.params;
+	vm.listData = initData.listData;
+	
+	vm.listStatus = [
+		{value: '', name: 'All'},
+		{value: 'true', name: 'Active'},
+		{value: 'false', name: 'Deactive'}
+	];
+	
+	vm.listViewWeek = [
+		{ value: '4', name: '4 Weeks' },
+		{ value: '8', name: '8 Weeks' },
+		{ value: '12', name: '12 Weeks' },
+		{ value: '16', name: '16 Weeks' },
+		{ value: '20', name: '20 Weeks' },
+		{ value: '24', name: '24 Weeks' }
+	];
+	
+	vm.listCourse.unshift({
+		courseId: '',
+		courseTitle: 'All'
+	});
+	
+	vm.listCenter.unshift({
+		centerId: '',
+		centerName: 'All'
+	});
+	
+	vm.listTrainer.unshift({
+		userId: '',
+		fullName: 'All'
+	});
+	
+	vm.listClassType.unshift({
+		classTypeId: '',
+		classTypeName: 'All'
+	});
+	
+	$scope.pageLoaded = true;
+	vm.isLoadingData = false;
+	vm.totalRow = vm.listData && vm.listData.length > 0 ? vm.listData[0].totalRow : 0;
+	progressService.complete();
+	
+	vm.SearchGroupClass = function(){
+		vm.params.p = 1;
+		vm.totalRow = 0;
+		$state.go($state.current, vm.params, {notify: false});
+	};
+	
+	$timeout(function(){
+		$scope.$on('$locationChangeSuccess', function(event, from, to) {
+			$timeout(function(){
+		        vm.listData = [];
+		        vm.isLoadingData = true;
+				
+		        var promise = dataService.getAllGroupClass(vm.params);
+		        promise.then(function (res) {
+		            progressService.complete();
+		            
+		            vm.isLoadingData = false;
+		            vm.listData = res.data;
+		            vm.totalRow = vm.listData && vm.listData.length > 0 ? vm.listData[0].totalRow : 0;
+		        });
+			});
+		});
+	});
+	
+	$scope.$watch(function(){
+		return vm.listData;
+	}, function(val){
+		if(val && val.length > 0){
+			vm.listWeek = vm.listData[0].listSchedule;
+		}
+		else{
+			vm.listWeek = [];
+		}
+	});
+	
+	vm.extendGroupClass = function(groupClass){
+		
+		bootbox.confirm("Extend group <strong>" + groupClass.groupClassName + "</strong> ?", function(res){
+			if(res){
+				progressService.start();
+				var params ={
+						groupClassId: groupClass.groupClassId,
+						modifiedBy: $scope.sessionUserId	
+				};
+				
+				var promise = dataService.extendGroupClass(params);
+				promise.then(function (res) {
+		            progressService.complete();
+		            if(res.data.id == 1){
+		            	notifyService.success(res.data.message);
+		            	$state.reload();
+		            }
+		            else{
+		            	notifyService.error(res.data.message);
+		            }
+		        });
+			}
+		});
+	};
+};
+
+classGroupListCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', 'dataService', '$timeout', 'progressService', 'notifyService', 'initData'];
+
+app.controller('classGroupListCtrl', classGroupListCtrl);function addClassGroupCtrl($scope, $rootScope, $q, $state, $stateParams, dataService, $timeout, progressService, initData) {
+	var vm = this;
+	vm.params = $stateParams;
+	
+	vm.listCourse = initData.listCourse;
+	vm.listCenter = initData.listCenter;	
+	vm.listTrainer = initData.listTrainer;
+	vm.listClassType = initData.listClassType;
+	vm.listHoliday = initData.listHoliday;
+	
+	vm.listWeekDay = [
+		{ value: '', name: 'Class on'},
+		{ value: '0', name: 'Sunday' },
+		{ value: '1', name: 'Monday' },
+		{ value: '2', name: 'Tuesday' },
+		{ value: '3', name: 'Webnesday' },
+		{ value: '4', name: 'Thursday' },
+		{ value: '5', name: 'Friday' },
+		{ value: '6', name: 'Saturday' }
+	];
+	
+	vm.listCourse.unshift({
+		courseId: '',
+		courseTitle: 'Choose course'
+	});
+	
+	vm.listCenter.unshift({
+		centerId: '',
+		centerName: 'Choose center'
+	});
+	
+	vm.listTrainer.unshift({
+		userId: '',
+		fullName: 'By teacher'
+	});
+	
+	vm.listClassType.unshift({
+		classTypeId: '',
+		classTypeName: 'Choose class type'
+	});
+	
+	vm.newGroupClassInfo = {
+		startDayInWeek: '',
+		centerId: '',
+		courseId: '',
+		trainerId: '',
+		classTypeId: '',
+		unitStartId: ''
+	};
+	
+	vm.listCourseUnit = [
+		{
+			unitId: '',
+			unitTitle: 'Choose start unit'
+		}
+	];
+	
+//	vm.listCourseUnit = [];
+	vm.daysOfWeekDisabled = [];
+	vm.listClassDate = [];
+	
+	$scope.pageLoaded = true;
+	progressService.complete();
+		
+	vm.addNewGroupClass = function(){
+		
+		console.log(vm.newGroupClassInfo);
+		
+		
+		if (vm.addNewGroupClassForm.$valid) {
+			
+			vm.newGroupClassInfo.createdBy = $scope.sessionUserId;
+			
+			
+			var promise = dataService.addNewGroupClass(vm.newGroupClassInfo);
+			promise.then(function(res){
+				if (res.data.id == 1) {
+		            $scope.notifyService.success(res.data.message);
+		            $timeout(function() {
+		                $state.transitionTo($state.$current.parent, $state.params, {
+		                    reload: true,
+		                    inherit: false,
+		                    notify: true
+		                });
+		            }, 1500);
+		        } 
+				else {
+					$scope.notifyService.error(res.data.message);
+		        }
+			});
+			
+		} else {
+			angular.forEach(vm.addNewGroupClassForm.$error, function(field) {
+				angular.forEach(field, function(errorField) {
+					errorField.$setDirty();
+				})
+			});
+		}
+	};
+	
+	vm.onSelectCourseOrClassType = function(){
+		vm.newGroupClassInfo.unitStartId = '';
+		vm.listCourseUnit = [
+			{
+				unitId: '',
+				unitTitle: 'Choose start unit'
+			}
+		];
+		if(vm.newGroupClassInfo.courseId && vm.newGroupClassInfo.classTypeId)
+		{
+			var params = {
+				courseId: vm.newGroupClassInfo.courseId,
+				classTypeId: vm.newGroupClassInfo.classTypeId
+			};
+			
+			progressService.start();
+			var promise = dataService.getUnitByCourseAndClassType(params);
+			promise.then(function(res){
+				if(res.data && res.data.length > 0){
+					vm.listCourseUnit = vm.listCourseUnit.concat(res.data);
+					progressService.complete();
+					vm.getListClassDate();
+				}
+			});
+		}
+	};
+	
+	vm.onSelectClassDay = function(){
+		if(vm.newGroupClassInfo.startDayInWeek != '' && !isNaN(vm.newGroupClassInfo.startDayInWeek))
+		{
+			var selectedDay = Number(vm.newGroupClassInfo.startDayInWeek);
+			
+			vm.daysOfWeekDisabled = [0, 1, 2, 3, 4, 5, 6];
+			
+			var index = vm.daysOfWeekDisabled.indexOf(selectedDay);
+			if (index > -1) {
+				vm.daysOfWeekDisabled.splice(index, 1);
+			}
+			
+			var selectedDateWeekDay = moment(new Date(vm.newGroupClassInfo.startDate)).weekday();
+
+			if(selectedDateWeekDay != selectedDay){
+				vm.newGroupClassInfo.startDate = undefined;
+			}
+		}
+		else{
+			vm.daysOfWeekDisabled = [];
+		}
+	};
+	
+	vm.onSelectStartDate = function(weekDay){
+		$timeout(function(){
+			vm.newGroupClassInfo.startDayInWeek = weekDay.toString();
+			vm.getListClassDate();
+		});
+	};
+	
+	vm.getListClassDate = function(){
+		
+		var result = [];
+				
+		var listUnit = Enumerable.From(vm.listCourseUnit)
+								 .Where(function(x){ return x.unitId != '';}).ToArray();
+		
+		if(vm.newGroupClassInfo.startDate
+			&& listUnit && listUnit.length > 0 && vm.newGroupClassInfo.unitStartId){
+			
+			var index = 0;
+			
+			var sortedList = [];
+			var revertList = [];
+			
+			var selectedUnit = Enumerable.From(listUnit).First(function(x) { return x.unitId == vm.newGroupClassInfo.unitStartId; }); 
+			
+			var selectedIndex = listUnit.indexOf(selectedUnit);
+						
+			
+			
+			angular.forEach(listUnit, function(item){
+				var itemIndex = listUnit.indexOf(item);
+				
+				if(itemIndex >= selectedIndex){
+					sortedList.push(item);
+				}
+				else{
+					revertList.push(item);
+				}
+			});
+			
+			sortedList = sortedList.concat(revertList);
+									
+			angular.forEach(sortedList, function(value){
+				
+				var classDate = moment(vm.newGroupClassInfo.startDate).add(index * 7, 'days').format('DD-MM-YYYY');
+				
+				var isHoliday = Enumerable.From(vm.listHoliday)
+										  .Count(function(x){ return moment(x.holidayDate).format('DD-MM-YYYY') == classDate; }) > 0;
+				
+				while(isHoliday){
+					index++;
+					
+					result.push({
+						unitTitle: '',
+						date: classDate,
+						isHoliday: true
+					});
+					
+					classDate = moment(vm.newGroupClassInfo.startDate).add(index * 7, 'days').format('DD-MM-YYYY');
+					isHoliday = Enumerable.From(vm.listHoliday)
+					  					  .Count(function(x){ return moment(x.holidayDate).format('DD-MM-YYYY') == classDate; }) > 0;
+				}
+				
+				result.push({
+					unitTitle: value.unitTitle,
+					date: classDate,
+					isHoliday: false
+				});
+				
+				index++;
+			});
+		}
+		
+		vm.listClassDate = result;
+	};
+	
+	vm.getStudyDate = function(index){
+		if(vm.newGroupClassInfo.startDate){
+			return moment(vm.newGroupClassInfo.startDate).add(index * 7, 'days').format('DD-MM-YYYY');
+		}
+		else{
+			return 'N/A';
+		}
+	};
+	
+	vm.getStudyTime = function(){
+		if(vm.newGroupClassInfo.startTime){
+			return moment(vm.newGroupClassInfo.startTime).format('HH:mm');
+		}
+		
+		return '';
+	};
+};
+
+addClassGroupCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', '$stateParams', 'dataService', '$timeout', 'progressService', 'initData'];
+
+app.controller('addClassGroupCtrl', addClassGroupCtrl);function catalougeCtrl($scope, $rootScope, $q, $state, $stateParams, dataService, $timeout) {
+	var vm = this;
+	var oldCourseId = $stateParams.courseId;
+	var oldUnitId = $stateParams.unitId;
+	vm.params = $stateParams;
+	
+	var getAllCourse = function() {
+		var deferred = $q.defer();
+		var promise = dataService.getAllCourse();
+		promise.then(function(res) {
+			vm.listCourse = res.data;
+			deferred.resolve();
+		});
+
+		return deferred.promise;
+	};
+	
+	var getUnitInCourse = function(){
+		var deferred = $q.defer();
+		if(vm.params.courseId)
+		{		
+			var promise = dataService.getUnitInCourse(vm.params.courseId);
+			promise.then(function(res){
+				vm.listUnit = res.data;
+				deferred.resolve();
+			});
+		}
+		else{
+			deferred.resolve();
+		}
+		
+		return deferred.promise;
+	};
+	
+	var getLessonInUnit = function(){
+		var deferred = $q.defer();
+		if(vm.params.unitId)
+		{		
+			var promise = dataService.getLessonInUnit(vm.params.unitId);
+			promise.then(function(res){
+				vm.listLesson = res.data;
+				deferred.resolve();
+			});
+		}
+		else{
+			deferred.resolve();
+		}
+		
+		return deferred.promise;
+	};
+	
+	var getActivityCatalouge = function(){
+		var deferred = $q.defer();
+		
+		var params = {
+			unitId: vm.params.unitId,
+			lessonId: vm.params.lessonId
+		};
+		
+		var promise = dataService.getActivityCatalouge(params);
+		promise.then(function(res){
+			vm.listActivityCatalouge = res.data;
+			deferred.resolve();
+		});
+		
+		return deferred.promise;
+	};
+	
+	
+	
+	$scope.$watch('parentLoaded', function (parentLoaded) {
+        if (parentLoaded) {        	
+        	$q.all([
+        		getAllCourse(),
+        		getUnitInCourse(),
+        		getLessonInUnit(),
+        		getActivityCatalouge()
+        	]).then(function(){
+        		  $timeout(function(){
+        			  $('.select2').select2();
+        		  });
+    			  $scope.pageLoaded = true; 
+        	  });
+        }
+    });
+	
+	vm.filterCatalouge = function(){
+		if(vm.params.courseId != oldCourseId){
+			vm.params.unitId = undefined;
+			vm.params.lessonId = undefined;
+		}
+		else if(vm.params.unitId != oldUnitId){
+			vm.params.lessonId = undefined;
+		}
+		
+		$state.transitionTo($state.current, vm.params, {
+            reload: true,
+            inherit: false,
+            notify: true
+        });
+	};
+	
+};
+
+catalougeCtrl.$inject = ['$scope', '$rootScope', '$q', '$state', '$stateParams', 'dataService', '$timeout'];
+
+app.controller('catalougeCtrl', catalougeCtrl);

@@ -1,0 +1,10 @@
+<a class="fc-event" ui-sref="root.schedule.classInfo({id: event.classId})" style="{{style}}" ng-class="eventClass"> 
+	<div class="fc-event-desc pn">
+		<b class="fc-event-desc-detail" title="{{event.unitTitle}}"> 
+			<i class="fa fa-file-text-o fa-fw"></i>{{event.unitTitle}}<br/> 
+			<span ng-if="isAdmin"><i class="fa fa-user fa-fw"></i>{{event.teacherName}}<br/></span>
+			<i class="fa fa-clock-o fa-fw"></i>{{event.studyDateTime | dateTimeShortVN}}<br/>
+			<i class="fa fa-home fa-fw"></i>{{event.centerName}}<br/>
+		</b> 
+	</div> 
+</a>

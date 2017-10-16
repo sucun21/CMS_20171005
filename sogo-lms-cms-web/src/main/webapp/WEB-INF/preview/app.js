@@ -1,0 +1,1 @@
+var appPreview = angular.module('app.preview', ['ngSanitize']);

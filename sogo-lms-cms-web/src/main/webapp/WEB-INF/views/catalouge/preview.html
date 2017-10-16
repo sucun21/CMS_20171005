@@ -1,0 +1,21 @@
+<div class="modal fade modal-confirm-cont in" aria-hidden="false" style="display: block;">
+	<div class="modal-dialog full-screen-popup">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" ng-click="closePopup()">
+					<i class="fa fa-times"></i>
+				</button>
+				<h3 class="modal-title text-center">Catalouge Preivew</h3>
+			</div>
+			{{$ctrl.params.activityId}}
+			<div class="modal-body pn">
+				<iframe class="preview-iframe" src="/catalouge-preview/1" onload="resizeIframe(this)" frameborder="0">
+				</iframe>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-default" ng-click="closePopup()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-backdrop fade in"></div>

@@ -1,0 +1,14 @@
+<div class="div_answer">
+	<h5 style="margin-top:0px;font-weight:bold;">Answer:</h5>
+	<p class="answer" ng-repeat="answer in vm.currentQuizQuestion.listAnswer">
+		<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="radio-{{answer.answerId}}">
+		  <input type="radio" id="radio-{{answer.answerId}}" name="radio_answer" class="mdl-radio__button" 
+		  	ng-model="vm.currentQuizQuestion.traineeAnswer"
+		  	ng-value="answer.answerIndex">
+		  <span class="mdl-radio__label">{{answer.answerText}}</span>
+		</label>
+	</p>
+	<div class="popup-error-activity-answer" ng-if="vm.traineeAnswerErrorText">
+		<p><i class="material-icons">&#xE000;</i><i>{{vm.traineeAnswerErrorText}}</i></p>
+	</div>
+</div>

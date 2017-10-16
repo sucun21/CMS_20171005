@@ -1,0 +1,20 @@
+<div ng-if="vm.listActivity" class="Activity_time" ng-include="'views/preview/activity_time.html'"></div>
+<div class="CD_content" style="width:100%;">
+	<div class="CD_content_header">
+		<div class="icon">
+			<img src="/preview/images/CD_start_1.png" />
+		</div>
+		<div class="info">
+			<h4>{{vm.activityDetails.activityName}}</h4>
+			<p ng-bind-html="vm.activityDetails.activityDes" id="pActivityDes"></p>
+		</div>
+	</div>
+</div>
+<div class="block_box CD_block_box">
+	<div class="content">
+		<p ng-bind-html="vm.activityDetails.activityData" id="pActivityData"></p>
+	</div>
+</div>
+<div class="CD_footer">
+	<a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn-info btn-blue" >NEXT</a>
+</div>

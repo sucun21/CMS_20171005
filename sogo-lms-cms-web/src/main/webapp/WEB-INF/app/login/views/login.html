@@ -1,0 +1,53 @@
+<div id="main" class="animated fadeIn">
+	<section id="content_wrapper">
+		<section id="content">
+			<div class="admin-form theme-info" id="login1">
+				<div class="panel panel-info mt10 br-n">
+					<div class="panel-heading heading-border bg-white">
+						<h3 class="text-center text-uppercase mn color-black">Learning Management System</h3>
+					</div>
+					<form ng-submit="$vm.doLogin()" name="$vm.loginForm" novalidate accessible-form>
+						<div class="panel-body bg-light p30">
+							<div class="row">
+								<div class="col-sm-12 pr30">
+									<div class="section mb5">
+										<label for="email" class="field prepend-icon"> 
+											<input type="text" name="email" class="gui-input" placeholder="Enter email" id="txtEmail"
+											ng-model="$vm.loginInfo.email" required 
+											ng-class="{ 'input-validation-error' : $vm.isInvalidField($vm.loginForm.email) }"> 
+											<label for="email" class="field-icon">
+												<i class="fa fa-envelope"></i> 
+											</label>
+										</label>
+										<span class="field-validation-error" ng-if="$vm.isInvalidField($vm.loginForm.email)">
+				                            <span for="email" ng-if="$vm.loginForm.email.$error.required">Email can't be blank</span>
+				                        </span>
+									</div>
+									<div class="section mbn">
+										<label for="Password" class="field prepend-icon"> 
+											<input type="password" name="Password" class="gui-input" placeholder="Enter password"
+											ng-model="$vm.loginInfo.password" required 
+											ng-class="{ 'input-validation-error' : $vm.isInvalidField($vm.loginForm.Password) }"> 
+											<label for="Password" class="field-icon">
+												<i class="fa fa-lock"></i> 
+											</label>
+										</label>
+										<span class="field-validation-error" ng-if="$vm.isInvalidField($vm.loginForm.Password)">
+				                            <span for="Password" ng-if="$vm.loginForm.Password.$error.required">Password can't be blank</span>
+				                        </span>
+				                        <span class="field-validation-error" ng-if="$vm.isLoginError">
+				                            <span for="email">Email or password incorrect</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="panel-footer clearfix p10 ph15">
+							<button type="submit" class="button btn-primary mr10 pull-right">Login</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</section>
+	</section>
+</div>

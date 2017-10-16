@@ -1,0 +1,83 @@
+<!-- Start: Topbar -->
+<header id="topbar">
+	<div class="topbar-left">
+		<ol class="breadcrumb">
+			<li class="crumb-icon"><a ui-sref="root.home"> <span class="glyphicon glyphicon-home"></span>
+			</a></li>
+			<li class="crumb-active"><a href="javascript:void(0);">Catalouge</a></li>
+		</ol>
+	</div>
+</header>
+<!-- End: Topbar -->
+<div class="tray tray-center va-t posr animated fade" ng-class="pageLoaded ? 'fadeIn': 'fade'">
+	<div class="panel">
+		<div class="panel-menu p12 admin-form theme-primary">
+			<div class="row">
+				<div class="col-md-3">
+					<label class="field-label">Course</label>
+                    <select class="form-control select2"
+                    	ng-model="$ctrl.params.courseId"
+                    	ng-options="c.courseId.toString() as c.courseTitle for c in $ctrl.listCourse"
+                    	ng-change="$ctrl.filterCatalouge()">
+                    	<option value>All Course</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                	<label class="field-label">Unit</label>
+                    <select class="form-control select2" ng-model="$ctrl.params.unitId"
+                    	ng-options="u.unitId.toString() as u.unitTitle for u in $ctrl.listUnit"
+                    	ng-change="$ctrl.filterCatalouge()">
+                    	<option value>All Unit</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                	<label class="field-label">Lesson</label>
+                    <select class="form-control select2" ng-model="$ctrl.params.lessonId"
+                    	ng-options="l.lessonId.toString() as l.lessonTitle for l in $ctrl.listLesson"
+                    	ng-change="$ctrl.filterCatalouge()">
+                    	<option value>All Lesson</option>
+                    </select>
+                </div>
+           </div>
+		</div>
+		<div class="panel-body pn">
+			<div class="table-responsive">
+				<table class="table table-bordered mbn">
+					<thead>
+						<tr>
+							<th>Unit</th>
+							<th>Lesson</th>
+							<th>Activity</th>
+							<th>Type</th>
+							<th>Estimate</th>									
+							<th>Launch</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="activity in $ctrl.listActivityCatalouge">
+							<td>
+								{{activity.unitTitle}}
+							</td>
+							<td>{{activity.lessonTitle}}</td>
+							<td>{{activity.activityName}}</td>
+							<td class="text-center">{{activity.activityTypeName}}</td>
+							<td class="text-center">{{activity.activityTime}} {{activity.activityTime > 1 ? 'mins' : 'min'}}</td>
+							<td class="text-center">
+								<a class="btn btn-success btn-sm"
+								target="_blank" href="/catalouge/preview/{{activity.unitId}}/{{activity.lessonId}}/{{activity.activityId}}">
+									<i class="fa fa-external-link"></i>
+								</a>
+							</td>
+						</tr>
+						<tr ng-if="$ctrl.listActivityCatalouge == null || $ctrl.listActivityCatalouge.length == 0">
+							<td colspan="5">
+								No activity found!
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+

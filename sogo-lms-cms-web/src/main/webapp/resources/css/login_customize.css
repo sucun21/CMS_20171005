@@ -1,0 +1,34 @@
+body.external-page #main{
+    background-image: url(../images/bg_login.png) !important;
+    background-size: cover;
+    background-position: 50% 0%;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-repeat: no-repeat;
+}
+
+body.external-page #content .admin-form{
+	max-width:500px !important;
+}
+
+.color-black{
+	color: #333 !important; 
+}
+
+.ma{
+	margin:auto !important;
+}
+
+body.external-page #content_wrapper{
+	margin-left: 0 !important;
+}
+
+/* .admin-form .panel-info > .panel-heading{ */
+/* 	border-top-color:#ed1c24 !important; */
+/* } */
+
+/* .admin-form .panel-info.heading-border:before, .admin-form .panel-info .heading-border:before, */
+/* .admin-form .panel-info > .panel-heading:before{ */
+/* 	background-color: #ed1c24 !important; */
+/* } */

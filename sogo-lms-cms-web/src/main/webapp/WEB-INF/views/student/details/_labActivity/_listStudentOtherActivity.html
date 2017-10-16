@@ -1,0 +1,35 @@
+<form class="form-horizontal form-text-only property-item" ng-repeat="activity in vm.listStudentOtherActivity"
+	ng-class="{'mt10': $index > 0}">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="col-md-12">
+				<label class="control-label fw600">Activity Name:</label>
+				{{activity.activityName}}
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Start time:</label>
+				{{activity.startTime | dateTimeVN}}
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">End time:</label>
+				{{activity.endTime | dateTimeVN}}
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Time spend:</label>
+				{{activity.timeSpend | unitTimeSpend}}
+			</div>
+		</div>
+	</div>
+</form>
+<p class="mn" ng-if="(vm.listStudentOtherActivity == null || vm.listStudentOtherActivity.length == 0) && !IsShowLoading()">No activity found!</p>
+<p class="mn" ng-if="IsShowLoading()">
+	Loading...
+</p>

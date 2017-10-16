@@ -1,0 +1,27 @@
+<div class="table-responsive">
+	<table class="table table-striped table-bordered">
+		<thead>
+			<tr>
+				<th>Lesson Name</th>
+				<th>Quiz Name</th>
+				<th>Student Complete</th>
+				<th>Low Question</th>
+				<th>View result</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="quiz in $vm.listQuizReport">
+				<td>{{quiz.lessonTitle}}</td>
+				<td>{{quiz.activityName}}</td>
+				<td class="text-center">{{quiz.totalStudentDone}}/{{quiz.totalStudent}}</td>
+				<td class="text-center">{{quiz.totalLowQuestion}}/{{quiz.totalQuestion}}</td>
+				<td class="text-center">
+					<button type="button" class="btn btn-sm btn-success" ui-sref="root.schedule.classInfo({ view: 'report-detail', quizId: quiz.activityId })">View</button>
+				</td>
+			</tr>
+			<tr ng-if="!$vm.listQuizReport || $vm.listQuizReport.length == 0">
+				<td colspan="5">No quiz found!</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

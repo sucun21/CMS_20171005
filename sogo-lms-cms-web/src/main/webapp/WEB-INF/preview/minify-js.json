@@ -1,0 +1,14 @@
+{
+    "bundles": [
+        {
+            "type": "js",
+            "name": "app.min.js",
+            "files": [
+                "app.js",
+                "app.filters.js",
+                "controllers/preview.js",
+                "services/previewService.js"
+            ]
+        }
+    ]
+}

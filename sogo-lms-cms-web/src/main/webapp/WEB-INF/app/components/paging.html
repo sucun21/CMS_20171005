@@ -1,0 +1,36 @@
+
+<div class="panel-footer bdtop-none" ng-show="totalPage > 1">
+    <ul class="pagination pagination-sm mn">
+    	<li class="paginate_button previous" ng-class="{'disabled': params.p == 1}">
+             <a href ng-click="GoToPage(1, $event)">
+             	<i class="fa fa-angle-double-left"></i>
+             </a>
+         </li>
+         <li class="paginate_button previous" ng-class="{'disabled': params.p == 1}">
+             <a href ng-click="PreviousPage($event)"><i class="fa fa-chevron-left"></i></a>
+         </li>
+         <li class="paginate_button" ng-if="startNum > 1">
+             <a href ng-click="GoToPage(1, $event)">1</a>
+         </li>
+         <li class="paginate_button disabled" ng-if="startNum > 2"><a>...</a></li>
+         <li ng-repeat="i in getNumber(totalPage) track by $index" ng-class="{'active': params.p == $index + 1}"
+         	ng-if="$index + 1 >= startNum && $index + 1 <= endNum">
+             <a href ng-click="GoToPage($index + 1, $event)">{{$index + 1}}</a>
+         </li>
+         <li class="paginate_button disabled" ng-if="endNum < totalPage - 1"><a>...</a></li>
+         <li class="paginate_button" ng-if="totalPage > CountShowPage && endNum < totalPage - 1" ng-class="{'active': params.p == totalPage}">
+             <a href ng-click="GoToPage(totalPage, $event)">{{totalPage}}</a>
+         </li>
+         <li class="paginate_button next" ng-class="{'disabled': params.p >= totalPage}">
+             <a href ng-click="NextPage($event)">
+                 <i class="fa fa-chevron-right"></i>
+             </a>
+         </li>
+         <li class="paginate_button previous" ng-class="{'disabled': params.p == totalPage}">
+             <a href ng-click="GoToPage(totalPage, $event)"><i class="fa fa-angle-double-right"></i></a>
+         </li>
+     </ul>
+     <p class="pagination pagination-description" ng-if="IsShowCount">
+        Display {{startIndex}} to {{endIndex}} of {{totalRow}} records
+    </p>
+</div>

@@ -1,0 +1,28 @@
+{
+    "bundles": [
+        {
+            "type": "js",
+            "name": "libs.min.js",
+            "files": [
+                "libs/jquery-3.2.0.min.js",
+				"libs/moment.min.js",
+				"libs/bootstrap.min.js",
+				"libs/bootstrap-datetimepicker.min.js",
+				"libs/fullcalendar.min.js",
+				"libs/fullcalendar-locale-all.js",
+				"libs/select2.js",
+				"libs/utility.js",
+				"libs/main.js",
+				"libs/linq.js",
+				"libs/common.js",
+				"libs/angular.min.js",
+				"libs/angular-sanitize.js",
+				"libs/angular-cache.js",
+				"libs/angular-ui-router.min.js",
+				"libs/angular-ngprogress.min.js",
+				"libs/angular-ui-select.js",
+				"libs/angular-ui-notification.min.js"
+            ]
+        }
+    ]
+}

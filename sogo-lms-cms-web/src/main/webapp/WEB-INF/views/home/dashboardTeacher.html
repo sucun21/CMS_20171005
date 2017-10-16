@@ -1,0 +1,101 @@
+
+<!-- Start: Topbar -->
+<!-- <header id="topbar"> -->
+<!-- 	<div class="topbar-left"> -->
+<!-- 		<ol class="breadcrumb"> -->
+<!-- 			<li class="crumb-active"><span class="fs22 fw400">Class Schedule</span></li> -->
+<!-- 		</ol> -->
+<!-- 	</div> -->
+<!-- 	<div class="topbar-right"> -->
+		
+<!-- 		<select class="form-control select2"  -->
+<!-- 			ng-model="$ctrl.params.courseId" -->
+<!-- 			ng-options="c.courseId as c.courseTitle for c in $ctrl.listCourse" -->
+<!-- 			ng-change="$ctrl.FilterSchedule()"> -->
+<!-- 			<option value>All</option> -->
+<!-- 		</select> -->
+<!-- 	</div> -->
+<!-- </header> -->
+<div class="panel mn">
+		<div class="panel-menu p12 admin-form theme-primary">
+			<form novalidate ng-submit="$ctrl.FilterSchedule()">
+               <div class="row">
+                <div class="col-md-3 col-md-offset-9">
+				 <label class="field-label">Course</label>
+                    <select class="form-control select2"
+                    	ng-model="$ctrl.params.courseId"
+                    	ng-options="c.courseId.toString() as c.courseTitle for c in $ctrl.listCourse"
+                    	ng-change="$ctrl.FilterSchedule()">
+                    	<option value>All</option>
+                    </select>
+                </div>
+               </div>
+          </form>
+	</div>
+</div>
+<!-- End: Topbar -->
+<section class="table-layout">
+	<aside class="tray tray-left tray290 va-t bg-white" data-tray-height="match">
+		<div class="panel">
+			<div class="panel-heading bg-warning">
+				Pending check attendance
+			</div>
+			<div class="panel-body pn">
+				<div class="bg-dotted class-list-cont">
+					<!-- Standard Events -->
+					<a class="fc-event fc-event-success" ng-if="!$ctrl.isLoadingPendingCheckAttendaceClass && !$ctrl.listPendingCheckAttendanceClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-check fa-fw"></i>No pending class found!</b>
+						</div>
+					</a>
+					<a class="fc-event" ng-if="$ctrl.isLoadingPendingCheckAttendaceClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-refresh fa-spin fa-fw"></i>Loading...</b>
+						</div>
+					</a>
+					<a class="fc-event fc-event-warning" ng-repeat="item in $ctrl.listPendingCheckAttendanceClass" ui-sref="root.home.classInfo({classId: item.classId })">
+						<div class="fc-event-desc pn">
+							<b class="fc-event-desc-detail" title="{{item.unitTitle}}">
+								<i class="fa fa-file-text-o fa-fw"></i>{{item.unitTitle}}<br/>
+								<i class="fa fa-clock-o fa-fw"></i>{{item.studyDateTime | dateTimeShortVN}} <br/>
+								<i class="fa fa-home fa-fw"></i>{{item.centerName}}
+							</b>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+		<div class="panel">
+			<div class="panel-heading bg-primary">
+				Upcoming classes in {{$ctrl.nextDayNum}} days
+			</div>
+			<div class="panel-body pn">
+				<div class="bg-dotted class-list-cont">
+					<!-- Standard Events -->
+					<a class="fc-event fc-event-danger" ng-if="!$ctrl.isLoadingIncomingClass && !$ctrl.listIncomingClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-exclamation fa-fw"></i>No incoming class found!</b>
+						</div>
+					</a>
+					<a class="fc-event" ng-if="$ctrl.isLoadingIncomingClass">
+						<div class="fc-event-desc">
+							<b><i class="fa fa-refresh fa-spin fa-fw"></i>Loading...</b>
+						</div>
+					</a>
+					<a class="fc-event fc-event-primary" ng-repeat="item in $ctrl.listIncomingClass" ui-sref="root.home.classInfo({classId: item.classId })">
+						<div class="fc-event-desc pn">
+							<b class="fc-event-desc-detail" title="{{item.unitTitle}}">
+								<i class="fa fa-file-text-o fa-fw"></i>{{item.unitTitle}}<br/>
+								<i class="fa fa-clock-o fa-fw"></i>{{item.studyDateTime | dateTimeShortVN}}<br/>
+								<i class="fa fa-home fa-fw"></i>{{item.centerName}}
+							</b>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+	</aside>
+	<div class="tray tray-center p20 va-t posr animated fadeIn bg-white">
+		<div id='calendar' class="admin-theme"></div>
+	</div>
+</section>

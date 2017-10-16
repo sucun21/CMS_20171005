@@ -1,0 +1,148 @@
+<!-- Start: Topbar -->
+<header id="topbar">
+	<div class="topbar-left">
+		<ol class="breadcrumb">
+			<li class="crumb-icon"><a ui-sref="root.home"> <span class="glyphicon glyphicon-home"></span>
+			</a></li>
+			<li class="crumb-active"><a href="javascript:void(0);">Manage Group Class</a></li>
+		</ol>
+	</div>
+	<div class="topbar-right">
+		<a ui-sref="root.groupClass.list.add" class="btn btn-success btn-sm"> <i class="fa fa-plus"></i> Schedule group</a>
+	</div>
+</header>
+<!-- End: Topbar -->
+	<div class="tray tray-center va-t posr animated fadeIn">
+		<div class="panel">
+			<div class="panel-menu p12 admin-form theme-primary">
+				<form novalidate ng-submit="$vm.SearchGroupClass()">
+					<button type="submit" class="hide"></button>
+	                 <div class="row">
+	                 	<div class="col-md-3">
+	                 		<label class="field-label">Search</label>
+		                     <label for="searchKey" class="field prepend-icon">
+		                         <input class="form-control" id="txtSearchKey" name="searchKey" ng-model="$vm.params.searchKey" placeholder="Group name..." type="text">
+			                     <label for="searchKey" class="field-icon"><i class="fa fa-search"></i></label>
+		                     </label>
+		                 </div>
+	                 	<div class="col-md-3">
+	                 		<label class="field-label">Course</label>
+		                     <ui-select ng-model="$vm.params.courseId" theme="select2" search-enabled="$vm.listCourse.length > minSearchItem" on-select="$vm.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.courseTitle}}</ui-select-match>
+	       					    <ui-select-choices repeat="c.courseId.toString() as c in $vm.listCourse | filter: $select.search">
+					              <div ng-bind-html="c.courseTitle"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+	                 		<label class="field-label">Center</label>
+		                     <ui-select ng-model="$vm.params.centerId" theme="select2" search-enabled="$vm.listCenter.length > minSearchItem" on-select="$vm.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.centerName}}</ui-select-match>
+	       					    <ui-select-choices repeat="c.centerId.toString() as c in $vm.listCenter | filter: $select.search">
+					              <div ng-bind-html="c.centerName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+	                 		<label class="field-label">Trainer</label>
+		                     <ui-select ng-model="$vm.params.trainerId" theme="select2" search-enabled="$vm.listTrainer.length > minSearchItem" on-select="$vm.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.fullName}}</ui-select-match>
+	       					    <ui-select-choices repeat="trainer.userId.toString() as trainer in $vm.listTrainer | filter: $select.search">
+					              <div ng-bind-html="trainer.fullName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 </div>
+	                 <div class="row mt10">
+	                 	<div class="col-md-3">
+		                 	<label class="field-label">Class Type</label>
+		                     <ui-select ng-model="$vm.params.classTypeId" theme="select2" search-enabled="$vm.listClassType.length > minSearchItem" on-select="$vm.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.classTypeName}}</ui-select-match>
+	       					    <ui-select-choices repeat="type.classTypeId.toString() as type in $vm.listClassType">
+					              <div ng-bind-html="type.classTypeName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 	<div class="col-md-3">
+		                 	<label class="field-label">Status</label>
+		                     <ui-select ng-model="$vm.params.statusId" theme="select2" search-enabled="false" on-select="$vm.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+	       					    <ui-select-choices repeat="status.value as status in $vm.listStatus">
+					              <div ng-bind-html="status.name"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+		                 	<label class="field-label">Week View</label>
+		                     <ui-select ng-model="$vm.params.weekView" theme="select2" search-enabled="$vm.listViewWeek.length > minSearchItem" on-select="$vm.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+	       					    <ui-select-choices repeat="week.value as week in $vm.listViewWeek">
+					              <div ng-bind-html="week.name"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 </div>
+                 </form>
+			</div>
+			<div class="panel-body pn">			
+				<div class="mbn" ng-class="{'lg-table-responsive': $vm.listWeek && $vm.listWeek.length > 0}">
+					<table class="table table-bordered mbn">
+						<thead>
+							<tr>
+								<th class="w50"></th>
+								<th class="w200">Group Name</th>
+								<th class="w130">Class Type</th>
+								<th class="w150">Course</th>
+								<th class="w150">Center</th>
+								<th class="w150">Trainer</th>									
+								<th class="w90">Start Date</th>
+								<th class="w60">Start Time</th>
+								<th class="w200">Start Unit</th>
+								<th class="w90">Max Capacity</th>
+								<th class="w70">Status</th>
+								<th ng-repeat="item in $vm.listWeek" title="{{item.weekDuration}}" class="w100">
+									Week {{item.weekNumber}}
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in $vm.listGroupClass">
+								<td class="text-center">
+									<button type="button" class="btn btn-info br2 btn-xs fs12 dropdown-toggle" title="Extend Group"
+										ng-click="$vm.extendGroupClass(item)">
+                                        <span class="fa fa-expand mrn"></span>
+                                    </button>
+								</td>
+								<td>
+									{{item.groupClassName}}
+								</td>
+								<td>
+									{{item.classTypeName}}
+								</td>
+								<td>{{item.courseTitle}}</td>
+								<td>{{item.centerName}}</td>
+								<td>{{item.trainerName}}</td>
+								<td class="text-center">{{item.startDate | dateToDateVN}}</td>
+								<td class="text-center">{{item.startTime | sliceChar:3}}</td>
+								<td>{{item.unitTitle}}</td>
+								<td class="text-right">{{item.limitUser}}</td>
+								<td class="text-center fw600" ng-class="item.isActive ? 'text-success' : 'text-danger'">
+									{{item.isActive ? 'Active' : 'Deactive'}}
+								</td>
+								<td ng-repeat="schedule in item.listSchedule" class="text-center">
+									{{schedule.classDateTime | dateTimeShortVN}}
+								</td>
+							</tr>
+							<tr ng-if="$vm.listGroupClass == null || $vm.listGroupClass.length == 0">
+								<td colspan="99">
+									No group class found!
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<pagination ng-if="$vm.totalRow > 0" params="$vm.params" total-row="$vm.totalRow"></pagination>
+		</div>
+	</div>
+<ui-view></ui-view>

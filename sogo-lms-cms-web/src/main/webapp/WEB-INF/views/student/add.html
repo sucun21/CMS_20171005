@@ -1,0 +1,305 @@
+
+<!-- Start: Topbar -->
+<header id="topbar">
+	<div class="topbar-left">
+		<ol class="breadcrumb">
+			<li class="crumb-active">
+<span class="fs22 fw400">Add new student</span>
+					</li>
+	</div>
+</header>
+<!-- End: Topbar -->
+<div class="tray tray-center va-t posr animated fade" ng-class="pageLoaded ? 'fadeIn': 'fade'">
+	<!-- begin: .admin-form -->
+	<div class="admin-form theme-primary">
+
+		<div id="p1" class="panel heading-border">
+			<form id="form-ui" ng-submit="$ctrl.addNewStudent()" name="$ctrl.addNewStudentForm" novalidate accessible-form>
+			<div class="panel-body bg-light">
+					<div class="section-divider mb40">
+						<span>Account info</span>
+					</div>
+					<!-- .section-divider -->
+
+					<!-- Basic Inputs -->
+					<div class="row">
+						<div class="col-md-offset-1 col-md-2">
+							<div class="section">
+								<img class="add-student display-img" ng-attr-src="{{$ctrl.selectImageDisplay ? $ctrl.selectImageDisplay : 'http://via.placeholder.com/159x113'}}" />
+								<button type="button" onclick="document.getElementById('fileInput').click();" class="btn btn-success add-student btn-change-img">Change</button>
+								<input class="hide" id="fileInput" type="file" file-model="selectImage" accept="image/*" />
+							</div>
+							<!--                                 <div class="section"> -->
+							<!--                                     <label class="field"> -->
+							<!--                                         <input type="text" name="from" id="from" class="gui-input" placeholder="Disabled no icon" disabled> -->
+							<!--                                     </label> -->
+							<!--                                 </div> -->
+						</div>
+						<div class="col-md-offset-1 col-md-8">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="firstName" class="gui-input" placeholder="First Name"
+                                                 ng-model="$ctrl.StudentInfo.firstName" required
+                                                 ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.firstName.$invalid && $ctrl.addNewStudentForm.firstName.$dirty }" />
+                                                <label for="firstName" class="field-icon"><i class="fa fa-font"></i>
+                                                </label>
+                                            </label>
+                                            <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.firstName.$invalid && $ctrl.addNewStudentForm.firstName.$dirty">
+				                            <span for="firstName" ng-if="$ctrl.addNewStudentForm.firstName.$error.required">First name can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="lastName" class="gui-input" placeholder="Last Name"
+                                                	ng-model="$ctrl.StudentInfo.lastName" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.firstName.$invalid && $ctrl.addNewStudentForm.lastName.$dirty }" />
+                                                <label for="lastName" class="field-icon"><i class="fa fa-font"></i>
+                                                </label>
+                                            </label>
+                                            <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.lastName.$invalid && $ctrl.addNewStudentForm.lastName.$dirty">
+				                            <span for="lastName" ng-if="$ctrl.addNewStudentForm.lastName.$error.required">Last name can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="userEmail" class="gui-input" placeholder="Email"
+                                                	ng-model="$ctrl.StudentInfo.userEmail" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.userEmail.$invalid && $ctrl.addNewStudentForm.userEmail.$dirty }" />
+                                                <label for="userEmail" class="field-icon">
+                                                	<i class="fa fa-envelope"></i>
+                                                </label>
+                                            </label>
+                                            <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.userEmail.$invalid && $ctrl.addNewStudentForm.userEmail.$dirty">
+				                            <span for="userEmail" ng-if="$ctrl.addNewStudentForm.userEmail.$error.required">Email can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                                <input type="text" name="userPhone" class="gui-input" placeholder="Phone"
+                                                ng-model="$ctrl.StudentInfo.userPhone" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.userPhone.$invalid && $ctrl.addNewStudentForm.userPhone.$dirty }"/>
+                                                <label for="userPhone" class="field-icon"><i class="fa fa-phone"></i>
+                                                </label>
+                                            </label>
+                                             <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.userPhone.$invalid && $ctrl.addNewStudentForm.userPhone.$dirty">
+				                            <span for="userPhone" ng-if="$ctrl.addNewStudentForm.userPhone.$error.required">Phone can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<label class="field prepend-icon">
+                                            <input type="password" name="password" class="gui-input" placeholder="Password"
+                                            	ng-model="$ctrl.StudentInfo.password" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.password.$invalid && $ctrl.addNewStudentForm.password.$dirty }">
+                                            <label for="password" class="field-icon"><i class="fa fa-key"></i>
+                                            </label>
+                                        </label>
+                                        <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.password.$invalid && $ctrl.addNewStudentForm.password.$dirty">
+				                            <span for="password" ng-if="$ctrl.addNewStudentForm.password.$error.required">Password can't be blank</span>
+				                        </span>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field prepend-icon">
+                                            <input type="password" name="confirmPassword" class="gui-input" placeholder="Confirm Password" 
+                                            		ng-model="$ctrl.StudentInfo.confirmPassword" required
+                                                	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.confirmPassword.$invalid && $ctrl.addNewStudentForm.confirmPassword.$dirty }"
+                                                	password-verify="$ctrl.StudentInfo.password"
+                                                	/>
+                                            <label for="confirmPassword" class="field-icon"><i class="fa fa-key"></i>
+                                            </label>
+                                        </label>
+                                        <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.confirmPassword.$invalid && $ctrl.addNewStudentForm.confirmPassword.$dirty">
+				                            <span for="confirmPassword" ng-if="$ctrl.addNewStudentForm.confirmPassword.$error.required">Confirm password can't be blank</span>
+				                            <span for="confirmPassword" ng-if="$ctrl.addNewStudentForm.confirmPassword.$error.passwordVerify">Password and Confirm password not match</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="section">
+<!-- 										<label class="field prepend-icon"> -->
+<!--                                                 <input type="text" name="dateOfBirth" class="gui-input datepicker" id="dtDOB" placeholder="Date of birth" -->
+<!--                                                 	required -->
+<!--                                                 	ng-model="$ctrl.StudentInfo.dob" -->
+<!--                                                 	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.dateOfBirth.$invalid && $ctrl.addNewStudentForm.dateOfBirth.$dirty }" -->
+<!--                                                  /> -->
+<!--                                                 <label for="dateOfBirth" class="field-icon"> -->
+<!--                                                 	<i class="fa fa-calendar"></i> -->
+<!--                                                 </label> -->
+<!--                                             </label> -->
+										<datepicker placeholder="Date of birth" date-format="DD-MM-YYYY" date-max="{{currentDate}}"
+	                    			ng-model="$ctrl.StudentInfo.dateOfBirth" output-format="YYYY-MM-DD"
+	                    			ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.dateOfBirth.$invalid && $ctrl.addNewStudentForm.dateOfBirth.$dirty }"></datepicker>
+	                    			<input type="hidden" ng-model="$ctrl.StudentInfo.dateOfBirth" required name="dateOfBirth" />
+                                        <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.dateOfBirth.$error.required && $ctrl.addNewStudentForm.dateOfBirth.$dirty">
+				                            <span for="dateOfBirth">Date of birth can't be blank</span>
+				                        </span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="section">
+										<label class="field"> 
+											<select class="form-control select2" ng-model="$ctrl.StudentInfo.gender" name="gender" required
+			                                ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.gender.$invalid && $ctrl.addNewStudentForm.gender.$dirty }">
+													<option value>Gender</option>
+													<option value="1">Male</option>
+													<option value="2">Female</option>
+											</select>
+										</label>
+										<span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.gender.$error.required && $ctrl.addNewStudentForm.gender.$dirty">
+				                            <span for="gender">Choose student gender</span>
+				                        </span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="section-divider mb40">
+						<span>Course info</span>
+					</div>
+					<div class="row">
+						<div class="col-md-4">
+							<div class="section">
+								<label class="field"> 
+									<select class="form-control select2" ng-model="$ctrl.StudentInfo.centerId" name="centerId" required
+		                                ng-options="center.centerId as center.centerName for center in $ctrl.listCenter"
+		                                ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.centerId.$invalid && $ctrl.addNewStudentForm.centerId.$dirty }"
+		                                ng-change="$ctrl.OnChangeCenterOrCourse()">
+		                                <option value>Study center</option>
+	                               	</select>
+<!-- 										<select class="form-control"> -->
+<!-- 												<option value>Study center</option> -->
+<!-- 												<option value="1">Male</option> -->
+<!-- 												<option value="2">Female</option> -->
+<!-- 										</select> -->
+								</label>
+								<span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.centerId.$error.required && $ctrl.addNewStudentForm.centerId.$dirty">
+		                            <span for="email">Choose student study center</span>
+		                        </span>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="section">
+								<label class="field"> 
+									<select class="form-control select2" ng-model="$ctrl.StudentInfo.courseId" name="courseId" required
+		                                ng-options="c.courseId as c.courseTitle for c in $ctrl.listCourse"
+		                                ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.courseId.$invalid && $ctrl.addNewStudentForm.courseId.$dirty }"
+		                                ng-change="$ctrl.OnChangeCenterOrCourse()">
+		                                <option value>Enroll course</option>
+	                               	</select>
+								</label>
+								<span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.courseId.$error.required && $ctrl.addNewStudentForm.courseId.$dirty">
+		                            <span for="courseId">Choose enroll course</span>
+		                        </span>
+							</div>
+
+						</div>
+						<div class="col-md-4">
+							<div class="section">
+								<label class="field prepend-icon">
+                                     <input type="text" name="contractNo" class="gui-input" placeholder="Contract No." ng-model="$ctrl.StudentInfo.contractNo" required
+                                     	ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.contractNo.$invalid && $ctrl.addNewStudentForm.contractNo.$dirty }">
+                                     <label for="contractNo" class="field-icon">
+                                     	<i class="fa fa-file-text-o"></i>
+                                     </label>
+                                 </label>
+                                 <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.contractNo.$error.required && $ctrl.addNewStudentForm.contractNo.$dirty">
+		                            <span for="contractNo">Contract No. can't be blank</span>
+		                        </span>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4">
+							<div class="section">
+								<label class="field"> 
+									<select class="form-control select2"  ng-model="$ctrl.StudentInfo.introClassId" name="introClassId" required
+		                                ng-options="ic.classId as $ctrl.generateIntroClassName(ic) for ic in $ctrl.listIntroClass"
+		                                ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.introClassId.$invalid && $ctrl.addNewStudentForm.introClassId.$dirty }">
+											<option value>Select introduction class</option>
+									</select>
+								</label>
+								<span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.introClassId.$error.required && $ctrl.addNewStudentForm.introClassId.$dirty">
+		                            <span for="introClassId">Choose introduction class</span>
+		                        </span>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="section">
+								<label class="field"> 
+									<select class="form-control select2" ng-model="$ctrl.StudentInfo.normalClassId" name="normalClassId" required
+		                            ng-options="c.classId as $ctrl.generateIncomingFirstClassName(c) for c in $ctrl.listIncomingFirstClass"
+		                            ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.normalClassId.$invalid && $ctrl.addNewStudentForm.normalClassId.$dirty }">
+										<option value>Select group class</option>
+									</select>
+								</label>
+								<span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.normalClassId.$error.required && $ctrl.addNewStudentForm.normalClassId.$dirty">
+		                            <span for="normalClassId">Choose group class</span>
+		                        </span>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4">
+							<div class="section">
+								<datepicker placeholder="Start Date" date-format="DD-MM-YYYY" date-min="{{currentDate}}" date-max="{{$ctrl.maxStartDate}}"
+	                    			ng-model="$ctrl.StudentInfo.startDate" output-format="YYYY-MM-DD"
+	                    			on-select="$ctrl.onSelectStartDate(formatedDate)"
+	                    			ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.startDate.$invalid && $ctrl.addNewStudentForm.startDate.$dirty }"></datepicker>
+<!-- 								<label class="field prepend-icon"> -->
+<!--                                         <input type="text" name="startDate" class="gui-input datepicker" id="dtStartDate" placeholder="Start Date"  -->
+<!--                                         required ng-model="$ctrl.StudentInfo.st" -->
+<!--                                         ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.startDate.$invalid && $ctrl.addNewStudentForm.startDate.$dirty }"> -->
+<!--                                         <label for="startDate" class="field-icon"><i class="fa fa-calendar"></i> -->
+<!--                                         </label> -->
+<!--                                     </label> -->
+								<input type="hidden" ng-model="$ctrl.StudentInfo.startDate" required name="startDate" />
+                                <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.startDate.$error.required && $ctrl.addNewStudentForm.startDate.$dirty">
+		                            <span for="startDate">Start date can't be blank</span>
+		                        </span>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="section">
+								<datepicker placeholder="End Date" date-format="DD-MM-YYYY" date-min="{{$ctrl.minEndDate}}"
+	                    			ng-model="$ctrl.StudentInfo.endDate" output-format="YYYY-MM-DD"
+	                    			on-select="$ctrl.onSelectEndDate(formatedDate)"
+	                    			ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.endDate.$invalid && $ctrl.addNewStudentForm.endDate.$dirty }"></datepicker>
+<!-- 								<label class="field prepend-icon"> -->
+<!--                                         <input type="text" name="endDate" class="gui-input datepicker" id="dtEndDate" placeholder="End Date"  -->
+<!--                                         required ng-model="$ctrl.StudentInfo.et" -->
+<!--                                         ng-class="{ 'input-validation-error' : $ctrl.addNewStudentForm.endDate.$invalid && $ctrl.addNewStudentForm.endDate.$dirty }"> -->
+<!--                                         <label for="endDate" class="field-icon"><i class="fa fa-calendar"></i></label> -->
+<!--                                     </label> -->
+								<input type="hidden" ng-model="$ctrl.StudentInfo.endDate" required name="endDate" />
+                                    <span class="field-validation-error" ng-if="$ctrl.addNewStudentForm.endDate.$error.required && $ctrl.addNewStudentForm.endDate.$dirty">
+		                            <span for="endDate">End date can't be blank</span>
+		                        </span>
+							</div>
+						</div>
+					</div>
+			</div>
+			<div class="panel-footer text-right">
+				<button type="submit" class="btn btn-success">Save</button>
+				<button type="button" class="btn btn-danger">Cancel</button>
+			</div>
+			</form>
+		</div>
+	</div>
+	<!-- end: .admin-form -->
+</div>
+

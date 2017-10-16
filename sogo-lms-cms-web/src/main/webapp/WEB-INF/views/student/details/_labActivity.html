@@ -1,0 +1,52 @@
+<div class="panel" ng-controller="studentLabActivityCtrl as vm">
+	<div class="panel mb10">
+		<div class="row">
+          	<div class="col-md-3">
+               <select class="form-control select2"
+               	ng-model="vm.labActivityFilter.unitId"
+               	ng-options="unit.unitId as unit.unitTitle for unit in vm.getUnitInCourse()">
+               	<option value>Unit</option>
+               </select>
+<!-- 				<dropdown placeholder="Unit" list="vm.getUnitInCourse()" value="unitId" text="unitTitle" selected="vm.labActivityFilter.unitId" on-select="vm.onChangeUnit()"> -->
+<!-- 				</dropdown> -->
+           </div>
+           <div class="col-md-3">
+<!--            		<dropdown placeholder="Lesson" list="vm.getLessonByUnit(vm.labActivityFilter.unitId)" value="lessonId" text="lessonTitle"  -->
+<!--            			selected="vm.labActivityFilter.lessonId" on-select="vm.changeLabActivityTab()"> -->
+<!-- 				</dropdown> -->
+               <select class="form-control select2"
+               	ng-model="vm.labActivityFilter.lessonId"
+               	ng-options="lesson.lessonId as lesson.lessonTitle for lesson in vm.getLessonByUnit(vm.labActivityFilter.unitId)"
+               	ng-change="vm.reloadLabActivity()">
+               	<option value>Lesson</option>
+               </select>
+           </div>
+       </div>
+	</div>
+     <div class="panel-heading mt10">
+         <ul class="nav panel-tabs-border panel-tabs panel-tabs-left">
+             <li ng-click="vm.changeLabActivityTab('property')" ng-class="{'active': vm.currentLabTab == 'property'}">
+                 <a href="javascript:void(0);">Property</a>
+             </li>
+             <li ng-click="vm.changeLabActivityTab('quiz')" ng-class="{'active': vm.currentLabTab == 'quiz'}">
+                 <a href="javascript:void(0);">Quiz</a>
+             </li>
+             <li ng-click="vm.changeLabActivityTab('other')" ng-class="{'active': vm.currentLabTab == 'other'}">
+                 <a href="javascript:void(0);">Other</a>
+             </li>
+         </ul>
+     </div>
+     <div class="panel-body">
+         <div class="tab-content pn br-n">
+             <div class="tab-pane" ng-include="'/views/student/details/_labActivity/_listStudentProperty.html'"  ng-class="{'active': vm.currentLabTab == 'property'}">
+             	
+             </div>
+             <div class="tab-pane" ng-include="'/views/student/details/_labActivity/_listStudentQuiz.html'" ng-class="{'active': vm.currentLabTab == 'quiz'}">
+                 
+             </div>
+             <div class="tab-pane" ng-include="'/views/student/details/_labActivity/_listStudentOtherActivity.html'" ng-class="{'active': vm.currentLabTab == 'other'}">
+                 
+             </div>
+         </div>
+     </div>
+ </div>

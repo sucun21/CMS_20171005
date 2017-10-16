@@ -1,0 +1,48 @@
+<form class="form-horizontal form-text-only property-item" ng-repeat="property in $vm.listData"
+	ng-class="{'mt10': $index > 0}">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Property Name:</label>
+			</div>
+			<div class="col-md-12">{{property.propertyName}}</div>
+		</div>
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Start time:</label>
+			</div>
+			<div class="col-md-12">{{property.startTime | dateTimeVN}}</div>
+		</div>
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">End time:</label>
+			</div>
+			<div class="col-md-12">{{property.endTime | dateTimeVN}}</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4">
+			<div class="col-md-12">
+				<label class="control-label fw600">Question:</label>
+			</div>
+			<div class="col-md-12">{{property.activityName}}</div>
+		</div>
+		<div class="col-md-8">
+			<div class="col-md-12">
+				<label class="control-label fw600">Time spend:</label>
+			</div>
+			<div class="col-md-12">{{property.timeSpend | unitTimeSpend}}</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="col-md-12">
+				<label class="control-label fw600">Answer:</label>
+			</div>
+			<div class="col-md-12">{{property.traineeAnswer}}</div>
+		</div>
+	</div>
+</form>
+<p class="mn" ng-if="$vm.listData == null || $vm.listData.length == 0">
+	No property activity found!
+</p>

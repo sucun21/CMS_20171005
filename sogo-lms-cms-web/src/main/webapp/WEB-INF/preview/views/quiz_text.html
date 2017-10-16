@@ -1,0 +1,8 @@
+<div class="answer">
+	<textarea rows="5" class="input-quiz-text" placeholder="Please write your answer here." ng-model="vm.currentQuizQuestion.traineeAnswer"></textarea>
+</div>
+<div class="popup-error-activity-answer" ng-if="vm.traineeAnswerErrorText">
+	<p>
+		<i class="material-icons">&#xE000;</i><i>{{vm.traineeAnswerErrorText}}</i>
+	</p>
+</div>

@@ -1,0 +1,153 @@
+<!-- Start: Topbar -->
+<header id="topbar">
+	<div class="topbar-left">
+		<ol class="breadcrumb">
+			<li class="crumb-icon"><a ui-sref="root.home"> <span class="glyphicon glyphicon-home"></span>
+			</a></li>
+			<li class="crumb-active"><a href="javascript:void(0);">Class group list</a></li>
+		</ol>
+	</div>
+	<div class="topbar-right">
+		<a ui-sref="root.classGroup.list.add" class="btn btn-success btn-sm"> <i class="fa fa-plus"></i> Schedule group</a>
+	</div>
+</header>
+<!-- End: Topbar -->
+	<div class="tray tray-center va-t posr animated fade" ng-class="pageLoaded ? 'fadeIn': 'fade'">
+		<div class="panel">
+			<div class="panel-menu p12 admin-form theme-primary">
+				<form novalidate ng-submit="$ctrl.SearchGroupClass()">
+					<button type="submit" class="hide"></button>
+	                 <div class="row">
+	                 	<div class="col-md-3">
+	                 		<label class="field-label">Search</label>
+		                     <label for="searchKey" class="field prepend-icon">
+		                         <input class="form-control" name="searchKey" ng-model="$ctrl.params.searchKey" placeholder="Group name..." type="text">
+			                     <label for="searchKey" class="field-icon"><i class="fa fa-search"></i></label>
+		                     </label>
+		                 </div>
+	                 	<div class="col-md-3">
+	                 		<label class="field-label">Course</label>
+		                     <ui-select ng-model="$ctrl.params.courseId" theme="select2" search-enabled="$ctrl.listCourse.length > minSearchItem" on-select="$ctrl.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.courseTitle}}</ui-select-match>
+	       					    <ui-select-choices repeat="c.courseId.toString() as c in $ctrl.listCourse | filter: $select.search">
+					              <div ng-bind-html="c.courseTitle"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+	                 		<label class="field-label">Center</label>
+		                     <ui-select ng-model="$ctrl.params.centerId" theme="select2" search-enabled="$ctrl.listCenter.length > minSearchItem" on-select="$ctrl.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.centerName}}</ui-select-match>
+	       					    <ui-select-choices repeat="c.centerId.toString() as c in $ctrl.listCenter | filter: $select.search">
+					              <div ng-bind-html="c.centerName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+	                 		<label class="field-label">Trainer</label>
+		                     <ui-select ng-model="$ctrl.params.trainerId" theme="select2" search-enabled="$ctrl.listTrainer.length > minSearchItem" on-select="$ctrl.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.fullName}}</ui-select-match>
+	       					    <ui-select-choices repeat="trainer.userId.toString() as trainer in $ctrl.listTrainer | filter: $select.search">
+					              <div ng-bind-html="trainer.fullName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 </div>
+	                 <div class="row mt10">
+	                 	<div class="col-md-3">
+		                 	<label class="field-label">Class Type</label>
+		                     <ui-select ng-model="$ctrl.params.classTypeId" theme="select2" search-enabled="$ctrl.listClassType.length > minSearchItem" on-select="$ctrl.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.classTypeName}}</ui-select-match>
+	       					    <ui-select-choices repeat="type.classTypeId.toString() as type in $ctrl.listClassType">
+					              <div ng-bind-html="type.classTypeName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 	<div class="col-md-3">
+		                 	<label class="field-label">Status</label>
+		                     <ui-select ng-model="$ctrl.params.statusId" theme="select2" search-enabled="false" on-select="$ctrl.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+	       					    <ui-select-choices repeat="status.value as status in $ctrl.listStatus">
+					              <div ng-bind-html="status.name"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+		                 	<label class="field-label">Week View</label>
+		                     <ui-select ng-model="$ctrl.params.weekView" theme="select2" search-enabled="$ctrl.listViewWeek.length > minSearchItem" on-select="$ctrl.SearchGroupClass()">
+					            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+	       					    <ui-select-choices repeat="week.value as week in $ctrl.listViewWeek">
+					              <div ng-bind-html="week.name"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 </div>
+                 </form>
+			</div>
+			<div class="panel-body pn">			
+				<div class="lg-table-responsive mbn">
+					<table class="table table-bordered mbn">
+						<thead>
+							<tr>
+								<th class="w50"></th>
+								<th class="w200">Group Name</th>
+								<th class="w130">Class Type</th>
+								<th class="w150">Course</th>
+								<th class="w150">Center</th>
+								<th class="w150">Trainer</th>									
+								<th class="w90">Start Date</th>
+								<th class="w60">Start Time</th>
+								<th class="w200">Start Unit</th>
+								<th class="w90">Max Capacity</th>
+								<th class="w70">Status</th>
+								<th ng-repeat="item in $ctrl.listWeek" title="{{item.weekDuration}}" class="w100">
+									Week {{item.weekNumber}}
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in $ctrl.listData">
+								<td class="text-center">
+									<button type="button" class="btn btn-info br2 btn-xs fs12 dropdown-toggle" title="Extend Group"
+										ng-click="$ctrl.extendGroupClass(item)">
+                                        <span class="fa fa-expand mrn"></span>
+                                    </button>
+								</td>
+								<td>
+									{{item.groupClassName}}
+								</td>
+								<td>
+									{{item.classTypeName}}
+								</td>
+								<td>{{item.courseTitle}}</td>
+								<td>{{item.centerName}}</td>
+								<td>{{item.trainerName}}</td>
+								<td class="text-center">{{item.startDate | dateToDateVN}}</td>
+								<td class="text-center">{{item.startTime | sliceChar:3}}</td>
+								<td>{{item.unitTitle}}</td>
+								<td class="text-right">{{item.limitUser}}</td>
+								<td class="text-center fw600" ng-class="item.isActive ? 'text-success' : 'text-danger'">
+									{{item.isActive ? 'Active' : 'Deactive'}}
+								</td>
+								<td ng-repeat="schedule in item.listSchedule" class="text-center">
+									{{schedule.classDateTime | dateTimeShortVN}}
+								</td>
+							</tr>
+							<tr ng-if="($ctrl.listData == null || $ctrl.listData.length == 0) && !$ctrl.isLoadingData">
+								<td colspan="9">
+									No data found!
+								</td>
+							</tr>
+							<tr ng-if="$ctrl.isLoadingData">
+								<td colspan="9">
+									<i class="fa fa-spinner fa-spin fa-fw"></i>Loading data...
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<pagination ng-if="$ctrl.totalRow > 0" params="$ctrl.params" total-row="$ctrl.totalRow"></pagination>
+		</div>
+	</div>
+

@@ -1,0 +1,43 @@
+{
+    "bundles": [
+        {
+            "type": "js",
+            "name": "app.min.js",
+            "files": [
+                "app.js",
+				"app.configs.js",
+				"app.routes.js",
+				"app.services.js",
+				"app.filters.js",
+				"app.directives.js",
+				"shared/controllers/leftMenu.js",
+				"home/controllers/home.js",
+				"login/controllers/login.js",
+				"classSchedule/controllers/classSchedule.js",
+				"classSchedule/controllers/classInfo.js",
+				"student/controllers/list.js",
+				"student/controllers/add.js",
+				"student/controllers/detail.js",
+				"student/controllers/detail-class.js",
+				"student/controllers/detail-log-activity.js",
+				"student/controllers/detail-contract.js",
+				"student/controllers/detail-lab-activity.js",
+				"user/controllers/list.js",
+				"user/controllers/add.js",
+				"groupClass/controllers/list.js",
+				"groupClass/controllers/add.js",
+				"catalouge/controllers/list.js",
+				"course/controllers/manage.js",
+				"login/services/loginService.js",
+				"classSchedule/services/classScheduleService.js",
+				"classSchedule/services/classInfoService.js",
+				"student/services/studentService.js",
+				"user/services/userService.js",
+				"groupClass/services/groupClassService.js",
+				"catalouge/services/catalougeService.js",
+				"course/services/courseService.js",
+				"course/services/trainerService.js"
+            ]
+        }
+    ]
+}

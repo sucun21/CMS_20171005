@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.sogo</groupId>
+	<artifactId>lmscms</artifactId>
+	<name>sogo-lms-cms-web</name>
+	<packaging>war</packaging>
+	<version>1.0.0-BUILD-SNAPSHOT</version>
+	<properties>
+		<java-version>1.6</java-version>
+		<spring.version>4.3.7.RELEASE</spring.version>
+		<log4j.version>1.2.14</log4j.version>
+		<org.aspectj-version>1.6.10</org.aspectj-version>
+		<org.slf4j-version>1.6.6</org.slf4j-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<minify-jsEngine>CLOSURE</minify-jsEngine>
+		<minify-closureLanguage>ECMASCRIPT6</minify-closureLanguage>
+	</properties>
+	<build>
+		<finalName>sogo-lms-cms-web</finalName>
+		<plugins>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-compiler-plugin</artifactId> -->
+<!-- 				<version>3.0</version> -->
+<!-- 				<configuration> -->
+<!-- 					<source>${jdk.version}</source> -->
+<!-- 					<target>${jdk.version}</target> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+			<!-- minify and combine js/css -->
+			<plugin>
+				<groupId>com.samaxes.maven</groupId>
+				<artifactId>minify-maven-plugin</artifactId>
+				<version>1.7.6</version>
+				<executions>
+					<execution>
+						<id>minify-css</id>
+						<phase>package</phase>
+						<configuration>
+							<charset>UTF-8</charset>
+							<webappSourceDir>${basedir}/src/main/webapp/WEB-INF</webappSourceDir>
+							<webappTargetDir>${basedir}/src/main/webapp/WEB-INF</webappTargetDir>
+							<cssSourceDir>/css</cssSourceDir>
+							<cssTargetDir>/build</cssTargetDir>
+							<bundleConfiguration>${basedir}/src/main/webapp/WEB-INF/minify-css.json</bundleConfiguration>
+							<nosuffix>true</nosuffix>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>minify-libs</id>
+						<phase>package</phase>
+						<configuration>
+							<charset>UTF-8</charset>
+							<webappSourceDir>${basedir}/src/main/webapp/WEB-INF</webappSourceDir>
+							<webappTargetDir>${basedir}/src/main/webapp/WEB-INF</webappTargetDir>
+							<jsSourceDir>/js</jsSourceDir>
+							<jsTargetDir>/build</jsTargetDir>
+							<bundleConfiguration>${basedir}/src/main/webapp/WEB-INF/minify-libs.json</bundleConfiguration>
+							<jsEngine>${minify-jsEngine}</jsEngine>
+							<nosuffix>true</nosuffix>
+							<skipMinify>true</skipMinify>
+							<closureLanguage>ECMASCRIPT5</closureLanguage>
+							<closureAngularPass>true</closureAngularPass>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>minify-js</id>
+						<phase>package</phase>
+						<configuration>
+							<charset>UTF-8</charset>
+							<webappSourceDir>${basedir}/src/main/webapp/WEB-INF</webappSourceDir>
+							<webappTargetDir>${basedir}/src/main/webapp/WEB-INF</webappTargetDir>
+							<jsSourceDir>/app</jsSourceDir>
+							<jsTargetDir>/build</jsTargetDir>
+							<bundleConfiguration>${basedir}/src/main/webapp/WEB-INF/minify-js.json</bundleConfiguration>
+							<jsEngine>${minify-jsEngine}</jsEngine>
+							<nosuffix>true</nosuffix>
+							<closureLanguage>ECMASCRIPT5</closureLanguage>
+							<closureAngularPass>true</closureAngularPass>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>minify-preview-libs</id>
+						<phase>package</phase>
+						<configuration>
+							<charset>UTF-8</charset>
+							<webappSourceDir>${basedir}/src/main/webapp/WEB-INF</webappSourceDir>
+							<webappTargetDir>${basedir}/src/main/webapp/WEB-INF/preview</webappTargetDir>
+							<jsSourceDir>/js</jsSourceDir>
+							<jsTargetDir>/build</jsTargetDir>
+							<bundleConfiguration>${basedir}/src/main/webapp/WEB-INF/preview/minify-libs.json</bundleConfiguration>
+							<jsEngine>${minify-jsEngine}</jsEngine>
+							<nosuffix>true</nosuffix>
+							<skipMinify>true</skipMinify>
+							<closureLanguage>ECMASCRIPT5</closureLanguage>
+							<closureAngularPass>true</closureAngularPass>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>minify-preview-js</id>
+						<phase>package</phase>
+						<configuration>
+							<charset>UTF-8</charset>
+							<webappSourceDir>${basedir}/src/main/webapp/WEB-INF/preview</webappSourceDir>
+							<webappTargetDir>${basedir}/src/main/webapp/WEB-INF/preview</webappTargetDir>
+							<jsSourceDir>/</jsSourceDir>
+							<jsTargetDir>/build</jsTargetDir>
+							<bundleConfiguration>${basedir}/src/main/webapp/WEB-INF/preview/minify-js.json</bundleConfiguration>
+							<jsEngine>${minify-jsEngine}</jsEngine>
+							<nosuffix>true</nosuffix>
+							<closureLanguage>ECMASCRIPT5</closureLanguage>
+							<closureAngularPass>true</closureAngularPass>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>minify-preview-css</id>
+						<phase>package</phase>
+						<configuration>
+							<charset>UTF-8</charset>
+							<webappSourceDir>${basedir}/src/main/webapp/WEB-INF/preview</webappSourceDir>
+							<webappTargetDir>${basedir}/src/main/webapp/WEB-INF/preview</webappTargetDir>
+							<cssSourceDir>/css</cssSourceDir>
+							<cssTargetDir>/build</cssTargetDir>
+							<bundleConfiguration>${basedir}/src/main/webapp/WEB-INF/preview/minify-css.json</bundleConfiguration>
+							<nosuffix>true</nosuffix>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+			<exclusions>
+				<!-- Exclude Commons Logging in favor of SLF4j -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				 </exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+				
+		<!-- AspectJ -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${org.aspectj-version}</version>
+		</dependency>	
+		
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${org.slf4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>jms</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jdmk</groupId>
+					<artifactId>jmxtools</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jmx</groupId>
+					<artifactId>jmxri</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- @Inject -->
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>1</version>
+		</dependency>
+		<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>jaxb-api</artifactId>
+		    <version>2.2.12</version>
+		</dependency>
+
+				
+		<!-- Servlet -->
+		<dependency>
+	        <groupId>javax.servlet</groupId>
+	        <artifactId>javax.servlet-api</artifactId>
+	        <version>3.1.0</version>
+    		<scope>provided</scope>
+    	</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+	
+		<!-- SOGO Import -->
+		<dependency>
+	        <groupId>org.springframework.session</groupId>
+	        <artifactId>spring-session</artifactId>
+	        <version>1.2.0.RELEASE</version>
+	    </dependency>
+	    <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+            <version>1.0.1.RELEASE</version>
+        </dependency>
+        <dependency>
+	      <groupId>biz.paluch.redis</groupId>
+	      <artifactId>lettuce</artifactId>
+	      <version>3.5.0.Final</version>
+	    </dependency>
+    	<dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.8.3</version>
+        </dependency>
+        <dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>1.5.0.RELEASE</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-pool2</artifactId>
+		    <version>2.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>redis.clients</groupId>
+		    <artifactId>jedis</artifactId>
+		    <version>2.6.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-base</artifactId>
+			<version>2.4.4</version>
+		</dependency>
+		<!-- SOGO Import -->
+		<dependency>
+		    <groupId>commons-fileupload</groupId>
+		    <artifactId>commons-fileupload</artifactId>
+		    <version>1.3</version>
+		</dependency>
+		<!-- Json -->
+		<dependency>
+		    <groupId>com.googlecode.json-simple</groupId>
+		    <artifactId>json-simple</artifactId>
+		    <version>1.1.1</version>
+		</dependency>
+		<!-- End Json -->
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>        
+	</dependencies>
+</project>

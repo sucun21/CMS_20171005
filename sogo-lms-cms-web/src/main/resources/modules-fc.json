@@ -1,0 +1,28 @@
+[
+	{
+		"name": "root.student",
+		"url": "/student",
+		"abstract":true,
+		"views": [
+			{
+				"name": "",
+				"templateUrl": "html/templates/basicLayout.html"
+			},
+			{
+				"name": "header@applications1",
+				"templateUrl": "html/templates/header.html"
+			}
+		]
+	},
+	{
+		"name": "login",
+		"url": "/login",
+		"abstract": false,
+		"views": [
+			{
+				"name": "",
+				"templateUrl": "html/admin/loginForm.html"
+			}
+		]
+	}
+]

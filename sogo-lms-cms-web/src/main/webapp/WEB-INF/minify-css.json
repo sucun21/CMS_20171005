@@ -1,0 +1,23 @@
+{
+    "bundles": [
+        {
+            "type": "css",
+            "name": "app.min.css",
+            "files": [
+            	"fullcalendar.css",
+                "theme.css",
+                "adminpanels.css",
+                "admin-forms.css",
+                "bootstrap-datetimepicker.min.css",
+                "customize.css",
+                "select2.css",
+                "custom-dropdown.css",
+                "ngProgress.css",
+                "ui-select.css",
+                "select2_1.css",
+                "login_customize.css",
+                "angular-ui-notification.min.css"
+            ]
+        }
+    ]
+}

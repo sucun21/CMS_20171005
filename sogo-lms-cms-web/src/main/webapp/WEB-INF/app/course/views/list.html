@@ -1,0 +1,57 @@
+			<header id="topbar">
+         <div class="topbar-left">
+             <ol class="breadcrumb">
+                 <li class="crumb-icon">
+                     <a ui-sref="root.home">
+                         <span class="glyphicon glyphicon-home"></span>
+                     </a>
+                 </li>
+                 <li class="crumb-active"><a href="javascript:void(0);">Manage Course</a></li>
+             </ol>
+         </div>
+         <div class="topbar-right" ng-if="hasPermission('root.student.list.add')">
+         	<a ui-sref="root.student.list.add" ui-sref-opts="{reload: true}" class="btn btn-success btn-sm"><i class="fa fa-plus fa-fw"></i>Add new course</a>
+         </div>
+     </header>
+<!--         <div style="height: 40px; width: 100%;"> -->
+            
+<!--             <div class="topbar-right"> -->
+<!--                 <a ng-click = "addnewcourse()" class="btn btn-default btn-sm light fw600 ml10"><span class="fa fa-plus pr5"></span> Add New Course</a> -->
+                
+<!--             </div> -->
+<!--         </div> -->
+        <div class="tray tray-center va-t posr animated fadeIn">
+        <div class="panel">
+        	<div class="panel-menu text-right">
+        		<a ui-sref="root.course.manage({ view: 'card' })" ui-sref-active="btn-info" class="btn btn-default btn-sm light fw600 ml10">
+                	<span class="glyphicons glyphicons-table pr5"></span> View Card</a>
+                <a ui-sref="root.course.manage({ view: 'list' })" ui-sref-active="btn-info" class="btn btn-default btn-sm light fw600 ml10">
+                	<span class="glyphicons glyphicons-list pr5"></span> View List
+               	</a>
+        	</div>
+            <div class="panel-body pn">
+                <table class="table admin-form theme-warning tc-checkbox-1 fs13">
+                    <thead>
+                        <tr class="bg-light">
+                            <th class="">Course Title</th>
+                            <th class="">Short Description</th>
+                            <th class="text-right">Action</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat = "item in $vm.listCourse">
+                            <td class="">{{item.courseTitle}}</td>
+                            <td class="">{{item.courseShortDes}}</td>
+                            <td class="text-right">
+                                <div class="btn-group text-right">
+                                    <a ng-click = "viewdetails()"  class="btn btn-default btn-sm light fw600 ml10">View details</a>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>

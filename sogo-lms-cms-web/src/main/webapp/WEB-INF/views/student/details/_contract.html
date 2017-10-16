@@ -1,0 +1,69 @@
+<div class="panel" ng-controller="studentContractInfoCtrl as vm">
+	<div class="panel-body" ng-repeat="course in vm.listStudentCourse">
+		<form class="form-horizontal form-text-only">
+			<div class="row">
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600 mr5">Course:</label>
+						{{course.courseTitle}}
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600 mr5">Study center:&nbsp;</label>
+						{{course.centerName}}
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600 mr5">Contract No:&nbsp;</label>
+						{{course.contractNo}}
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600 mr5">Estimate start date:</label>
+						{{course.estimateStartDate | dateVN}}
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600 mr5">Estimate end date:</label>
+						{{course.estimateEndDate | dateVN}}
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600">Actual start date:</label>
+					</div>
+					<div class="col-md-12">{{course.actualStartDate | dateVN}}</div>
+				</div>
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600">Actual end date:</label>
+					</div>
+					<div class="col-md-12">{{course.actualEndDate | dateVN}}</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="col-md-12">
+						<label class="control-label fw600 mr5">Status:</label>
+						<div class="switch switch-success switch-inline v-align-middle">
+                            <input id="exampleCheckboxSwitch5" type="checkbox" ng-model="course.isActive" ng-click="vm.updateStudentCourseStatus(course)">
+                            <label for="exampleCheckboxSwitch5"></label>
+                        </div>
+<!-- 						{{course.isActive ? 'Active' : 'Deactive' }} -->
+<!-- 						<button type="button" class="btn btn-sm btn-success" ng-click="vm.updateStudentCourseStatus(course.isActive)"> -->
+<!-- 		            		{{course.isActive ? 'Deactive' : 'Active'}} -->
+<!-- 		            	</button> -->
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>

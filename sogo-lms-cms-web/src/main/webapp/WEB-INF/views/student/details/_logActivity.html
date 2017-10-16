@@ -1,0 +1,77 @@
+<div ng-controller="studentLogActivityCtrl as vm">
+	<div class="panel">
+		<form ng-submit="vm.addActivityLog()" name="vm.addActivityLogForm" novalidate>
+			<div class="panel-body pbn">
+				<div class="row">
+					<div class="col-md-4">
+						<select class="form-control" name="logType" required ng-model="vm.newActivityLog.commentTypeId"
+							ng-change="vm.onChangeCommentType()"
+							ng-options="ct.commentTypeId as ct.commentTypeName for ct in vm.listCommentType"
+							ng-class="{ 'input-validation-error' : vm.addActivityLogForm.logType.$invalid && vm.addActivityLogForm.logType.$dirty }">
+							<option value>Select type</option>
+						</select>
+						<span class="field-validation-error" ng-if="vm.addActivityLogForm.logType.$invalid && vm.addActivityLogForm.logType.$dirty">
+	                        <span for="lastName" ng-if="vm.addActivityLogForm.logType.$error.required">Choose log type</span>
+	                    </span>
+					</div>
+					<div class="col-md-4">
+						<select class="form-control" name="logResult" required ng-model="vm.newActivityLog.commentResultId"
+							ng-options="cr.commentResultId as cr.commentResultName for cr in vm.listCommentResult"
+							ng-class="{ 'input-validation-error' : vm.addActivityLogForm.logResult.$invalid && vm.addActivityLogForm.logResult.$dirty }">
+							<option value>Select result</option>
+						</select>
+						<span class="field-validation-error" ng-if="vm.addActivityLogForm.logResult.$invalid && vm.addActivityLogForm.logResult.$dirty">
+	                        <span for="lastName" ng-if="vm.addActivityLogForm.logResult.$error.required">Choose log result</span>
+	                    </span>
+					</div>
+				</div>
+				<div class="row mt20">
+					<div class="col-md-8">
+						<textarea class="form-control no-resize" name="logContent" rows="3" placeholder="Describle..."
+							ng-model="vm.newActivityLog.commentContent" required
+							ng-class="{ 'input-validation-error' : vm.addActivityLogForm.logContent.$invalid && vm.addActivityLogForm.logContent.$dirty }"></textarea>
+						<span class="field-validation-error" ng-if="vm.addActivityLogForm.logContent.$invalid && vm.addActivityLogForm.logContent.$dirty">
+	                        <span for="logContent" ng-if="vm.addActivityLogForm.logContent.$error.required">Log content can't be blank</span>
+	                    </span>
+					</div>
+				</div>
+				<div class="row mt5">
+					<div class="col-md-8">
+						<div class="checkbox-custom checkbox-primary mb5">
+							<input type="checkbox" id="addStudentTimeline" ng-value="true"
+							ng-model="vm.newActivityLog.isAddTimeline"> 
+							<label for="addStudentTimeline">Add to student timeline</label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-footer">
+				<button type="submit" class="btn btn-sm btn-success">Save</button>
+				<button type="reset" class="btn btn-sm btn-danger">Discard</button>
+			</div>
+		</form>
+	</div>
+	<div class="mt30 timeline-single" id="timeline">
+		<div class="timeline-divider mtn">
+			<div class="divider-label">{{currentDate}}</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6 left-column">
+				<div class="timeline-item" ng-repeat="log in vm.listActivityLog">
+					<div class="timeline-icon">
+						<span class="glyphicons glyphicons-edit text-primary"></span>
+					</div>
+					<div class="panel">
+						<div class="panel-heading">
+	<!-- 						<span class="panel-title">{{log.postByName}}</span> -->
+							<div class="panel-header-menu pull-right mr10 text-muted fs12">{{log.createdDate | dateTimeVN}}</div>
+						</div>
+						<div class="panel-body p10">
+							<pre ng-bind-html="log.postContent" class="timeline-content"></pre>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

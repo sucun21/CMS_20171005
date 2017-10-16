@@ -1,0 +1,318 @@
+[
+	{
+		"group": "Class Schedule",
+		"icon": "fa fa-calendar",
+		"states": [
+			{
+				"name": "root.schedule",
+				"url": "/schedule/?courseId&trainerId&centerId",
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/home/dashboard.html",
+						"controller": "dashboardCtrl",
+						"controllerAs": "$ctrl"
+					}
+				],
+				"data": {
+		            "pageTitle": "Class schedule"
+		        },
+		        "isShowMenu": true,
+				"menuName": "Class Schedule"
+			},
+			{
+				"name": "root.schedule.classInfo",
+				"url": "class-info/:classId",
+				"views":[
+					{
+						"name": "popup@root",
+						"templateUrl": "views/home/classInfoTeacher.html",
+						"controller": "classInfoTeacherCtrl",
+						"controllerAs": "$ctrl"
+					}
+				],
+				"data": {
+		            "pageTitle": "Class Information"
+		        }
+			},
+			{
+				"name": "root.home.classInfo.studentDetails",
+				"url": "/details/:tab/:id/:course/:courseTraineeId?st",
+				"data": {
+                    "pageTitle": "Student Info"
+                },
+				"views":[
+					{
+						"name": "popup2@root",
+						"templateUrl": "views/student/details.html",
+						"controller": "studentDetailsCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				]
+			}
+		]
+	},
+	{
+		"group": "Student",
+		"icon": "fa fa-graduation-cap",
+		"parentState": "root.student",
+		"states": [
+			{
+				"name": "root.student",
+				"url": "/student",
+				"abstract":true
+			},
+			{
+				"name": "root.student.list",
+ 				"url": "/list?searchKey&p&ps&studentStatus&courseId&centerId",
+ 				"reloadOnSearch": false,
+ 				"params":{
+ 					"searchKey":{
+ 						"value": null,
+ 						"squash": true
+ 					},
+ 					"p": {
+ 						"value": "1",
+ 						"squash": true
+ 					},
+ 					"ps": {
+ 						"value": "10",
+ 						"squash": true
+ 					},
+ 					"courseId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"centerId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"studentStatus":{
+ 						"value": "",
+ 						"squash": true
+ 					}
+ 				},
+				"data": {
+                    "pageTitle": "Manage Student"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/student/list.html",
+						"controller": "studentListCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"isShowMenu": true,
+				"menuName": "Manage Student",
+				"resolve": "getStudentListData"
+			},
+			{
+				"name": "root.student.list.add",
+				"url": "/add",
+				"data": {
+                    "pageTitle": "Add New Student"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/student/add.html",
+						"controller": "addStudentCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				]
+			},
+			{
+				"name": "root.student.list.details",
+				"url": "/details/:tab/:id/:course/:courseTraineeId?st",
+				"data": {
+                    "pageTitle": "Student Information"
+                },
+				"views":[
+					{
+						"name": "popup@root",
+						"templateUrl": "views/student/details.html",
+						"controller": "studentDetailsCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				]
+			}
+		]
+	},
+	{
+		"group": "System User",
+		"icon": "fa fa-users",
+		"parentState": "root.systemUser",
+		"states": [
+			{
+				"name": "root.systemUser",
+				"url": "/user",
+				"abstract":true
+			},
+			{
+				"name": "root.systemUser.list",
+				"url": "/list?searchKey&p&ps&userStatus&userTypeId",
+				"reloadOnSearch": false,
+ 				"params":{
+ 					"searchKey":{
+ 						"value": null,
+ 						"squash": true
+ 					},
+ 					"p": {
+ 						"value": "1",
+ 						"squash": true
+ 					},
+ 					"ps": {
+ 						"value": "10",
+ 						"squash": true
+ 					},
+ 					"userTypeId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"userStatus":{
+ 						"value": "",
+ 						"squash": true
+ 					}
+ 				},
+				"data": {
+                    "pageTitle": "Manage User"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/systemUser/list.html",
+						"controller": "systemUserListCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"isShowMenu": true,
+				"menuName": "Manage User",
+				"resolve": "getUserListData"
+			},
+			{
+				"name": "root.systemUser.list.add",
+				"url": "/add",
+				"data": {
+                    "pageTitle": "Add New User"
+                },
+				"views":[
+					{
+						"name": "popup@root",
+						"templateUrl": "views/systemUser/add.html",
+						"controller": "addUserCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				]
+			}
+		]
+	},
+	{
+		"group": "Class group",
+		"icon": "fa fa-calendar",
+		"parentState": "root.classGroup",
+		"states": [
+			{
+				"name": "root.classGroup",
+				"url": "/class-group",
+				"abstract":true
+			},
+			{
+				"name": "root.classGroup.list",
+				"url": "/list?searchKey&classTypeId&p&ps&statusId&courseId&centerId&trainerId&weekView",
+				"reloadOnSearch": false,
+ 				"params":{
+ 					"searchKey":{
+ 						"value": null,
+ 						"squash": true
+ 					},
+ 					"p": {
+ 						"value": "1",
+ 						"squash": true
+ 					},
+ 					"ps": {
+ 						"value": "10",
+ 						"squash": true
+ 					},
+ 					"classTypeId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"statusId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"courseId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"centerId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"trainerId":{
+ 						"value": "",
+ 						"squash": true
+ 					},
+ 					"weekView":{
+ 						"value": "4",
+ 						"squash": true
+ 					}
+ 				},
+				"data": {
+                    "pageTitle": "Manage Class Group"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/classGroup/list.html",
+						"controller": "classGroupListCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"isShowMenu": true,
+				"menuName": "Manage Class Group",
+				"resolve": "initClassGroupListData"
+			},
+			{
+				"name": "root.classGroup.list.add",
+				"url": "/add",
+				"data": {
+                    "pageTitle": "Schedule Group"
+                },
+				"views":[
+					{
+						"name": "popup@root",
+						"templateUrl": "views/classGroup/add.html",
+						"controller": "addClassGroupCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"resolve": "initAddClassGroupData"
+			}
+		]
+	},
+	{
+		"group": "Catalouge",
+		"icon": "fa fa-eye",
+		"states": [
+			{
+				"name": "root.catalouge",
+				"url": "/catalouge?courseId&unitId&lessonId",
+				"data": {
+                    "pageTitle": "Catalouge"
+                },
+				"views":[
+					{
+						"name": "@root",
+						"templateUrl": "views/catalouge/index.html",
+						"controller": "catalougeCtrl",
+						"controllerAs": "$ctrl"
+	                }
+				],
+				"isShowMenu": true,
+				"menuName": "Catalouge"
+			}
+		]
+	}
+]

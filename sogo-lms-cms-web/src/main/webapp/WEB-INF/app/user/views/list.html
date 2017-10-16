@@ -1,0 +1,90 @@
+
+     <!-- Start: Topbar -->
+     <header id="topbar">
+         <div class="topbar-left">
+             <ol class="breadcrumb">
+                 <li class="crumb-icon">
+                     <a ui-sref="root.home">
+                         <span class="glyphicon glyphicon-home"></span>
+                     </a>
+                 </li>
+                 <li class="crumb-active"><a href="javascript:void(0);">Manage User</a></li>
+             </ol>
+         </div>
+         <div class="topbar-right">
+         	<a ui-sref="root.user.list.add" ui-sref-opts="{reload: true}" class="btn btn-success btn-sm">
+        <i class="fa fa-plus"></i> Add new user
+    </a>
+         </div>
+     </header>
+     <!-- End: Topbar -->
+	<div class="tray tray-center va-t posr animated fadeIn">
+		<div class="panel">
+			<div class="panel-menu p12 admin-form theme-primary">
+				<form novalidate ng-submit="$vm.SearchUser()">
+					<div class="row">
+						<div class="col-md-3">
+							<label class="field-label">Search</label>
+		                     <label for="searchKey" class="field prepend-icon">
+		                         <input class="form-control" id="txtSearchKey" select-on-focus name="searchKey" ng-model="$vm.params.searchKey" placeholder="User phone, email..." type="text">
+		                         <label for="searchKey" class="field-icon"><i class="fa fa-search"></i></label>
+		                     </label>
+		                 </div>
+		                 <div class="col-md-3">
+	                 		<label class="field-label">User Type</label>
+	                 		<ui-select ng-model="$vm.params.userTypeId" theme="select2" on-select="$vm.SearchUser()">
+					            <ui-select-match>{{$select.selected.userTypeName}}</ui-select-match>
+        					    <ui-select-choices repeat="ut.userTypeId.toString() as ut in $vm.listUserType | filter: $select.search">
+					              <div ng-bind-html="ut.userTypeName"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+		                 <div class="col-md-3">
+		                 	<label class="field-label">Status</label>
+		                 	<ui-select ng-model="$vm.params.userStatus" theme="select2" search-enabled="false" on-select="$vm.SearchUser()">
+					            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+        					    <ui-select-choices repeat="status.value as status in $vm.listUserStatus">
+					              <div ng-bind-html="status.name"></div>
+					            </ui-select-choices>
+					          </ui-select>
+		                 </div>
+	                 </div>
+                 </form>
+			</div>
+			<div class="panel-body pn">
+				<div class="table-responsive">
+					<table class="table table-bordered mbn">
+						<thead>
+							<tr>
+								<th>User Name</th>
+								<th>User Email</th>
+								<th>User Phone</th>
+								<th>User Type</th>									
+								<th>Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="user in $vm.listUser">
+								<td>
+									{{user.fullName}}
+								</td>
+								<td>{{user.userEmail}}</td>
+								<td class="text-center">{{user.userPhone}}</td>
+								<td>{{user.userTypeName}}</td>
+								<td class="text-center fw600" ng-class="user.isActive ? 'text-success' : 'text-danger'">
+									{{user.isActive ? 'Active' : 'Deactive'}}
+								</td>
+							</tr>
+							<tr ng-if="$vm.listUser == null || $vm.listUser.length == 0">
+								<td colspan="99">
+									No user found!
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<pagination ng-if="$vm.totalRow > 0" params="$vm.params" total-row="$vm.totalRow"></pagination>
+		</div>
+	</div>
+<ui-view></ui-view>

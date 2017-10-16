@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+<!-- 	<bean class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration" /> -->
+<!-- 	<bean class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration"/> -->
+<!--     <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" p:hostName="45.119.80.49" p:port="6379" p:usePool="true"/> -->
+    
+    <task:annotation-driven />
+    <bean id="scheduledTask" class="cms.sogo.lmscms.common.ScheduledTask"></bean>
+    
+    <context:property-placeholder location="classpath:config-${env}.properties"/>
+    
+   	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+			<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+    
+   	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="restHelper" class="com.sogo.lmscms.utils.RestHelper">
+		<property name="restServerUrl" value="${REST_SERVER}" />
+	</bean> 
+	<bean id="imageHelper" class="com.sogo.lmscms.utils.ImageHelper">
+		<property name="avatarSaveLocation" value="${STUDENT_AVATAR_SAVE_LOCATION}" />
+	</bean> 
+	<bean id="apiHelper" class="com.sogo.lmscms.utils.ApiHelper"></bean>
+	
+<!-- 	<mvc:resources mapping="/preview/**" location="/resources/preview/" /> -->
+<!-- 	<mvc:resources mapping="/css/**" location="/resources/css/" /> -->
+<!-- 	<mvc:resources mapping="/images/**" location="/resources/images/" /> -->
+<!-- 	<mvc:resources mapping="/libs/**" location="/resources/js/libs/" /> -->
+<!-- 	<mvc:resources mapping="/app/**" location="/resources/js/app/" /> -->
+	<mvc:resources mapping="/fonts/**" location="/resources/fonts/" />
+	<mvc:resources mapping="/views/**" location="/WEB-INF/views/" cache-period="0"/>
+	<mvc:resources mapping="/pro/images/**" location="/resources/images/" />
+	<mvc:resources mapping="/pro/fonts/**" location="/resources/fonts/" />
+	<mvc:resources mapping="/pro/**" location="/resources/release/" />
+	<mvc:resources mapping="/build/**" location="/WEB-INF/build/" />
+	<mvc:resources mapping="/app/**" location="/WEB-INF/app/" cache-period="0" />
+	<mvc:resources mapping="/libs/**" location="/WEB-INF/js/libs/" />
+	<mvc:resources mapping="/css/**" location="/WEB-INF/css/" />
+	<mvc:resources mapping="/preview/**" location="/WEB-INF/preview/" />
+	<mvc:resources mapping="/images/**" location="/WEB-INF/images/" />
+<!-- 	<mvc:resources mapping="/partials/**" location="/WEB-INF/views/templates/partials/" cache-period="0" /> -->
+	
+	<!-- Configuring interceptors based on URI -->
+<!-- 	<mvc:interceptors> -->
+<!-- 		<mvc:interceptor> -->
+<!-- 			<mvc:mapping path="/**" /> -->
+<!-- 			<bean class="com.sogo.lmscms.controller.ExecuteActionInterceptor"></bean> -->
+<!-- 		</mvc:interceptor> -->
+<!-- 	</mvc:interceptors> -->
+	
+	<context:component-scan base-package="com.sogo.lmscms.controller" />
+<!-- 	<mvc:resources mapping="/controllers/**" location="/resources/core/js/app/controllers/" /> -->
+<!-- 	<mvc:resources mapping="/fonts/**" location="/resources/core/fonts/" /> -->
+<!-- 	<mvc:resources mapping="/json/translations/**" location="/resources/core/js/app/translations/" cache-period="0"/> -->
+<!-- 	<mvc:resources mapping="/templates/**" location="/WEB-INF/views/templates/" cache-period="0"/> -->
+<!-- 	<mvc:resources mapping="/partials/**" location="/WEB-INF/views/templates/partials/" cache-period="0" /> -->
+<!-- 	<mvc:resources mapping="/pro/images/**" location="/resources/core/images/" /> -->
+<!-- 	<mvc:resources mapping="/pro/fonts/**" location="/resources/core/fonts/" /> -->
+<!-- 	<mvc:resources mapping="/pro/**" location="/resources/core/release/" /> -->
+</beans>
